@@ -17,8 +17,15 @@ Mode switch means basically the starting & ending of 'Hunter being hunt'
 - ### Menu, Countdown & Game Over page
 Menu can contain : Start Game, Some Modes, Sprite Options, Settings (for audio management) <br>
 Countdown at the start of a round <br>
-Game Over page can contain: your point, All time highest, 3 buttons (play again, go to menu, exit)
+Game Over page can contain: your point, all time highest, 3 buttons (play again, go to menu, exit)
 
 # Advance Checkpoints
 - ### Give 4 features to 4 hunters
 - ### Designing some unconventional modes with custom features
+
+# Unconventional mode idea
+- ### main sprite and / or hunters can fire (always / for a few seconds)
+- ### main sprite and / or hunters can jump over walls (always / for a few seconds)
+- ### some escape portals that only allows main sprite
+- ### main sprite being invisible / invincible / extremely fast for a few seconds
+- ### main sprite being the hunter & target is to hunt all other sprites before they complete the game
