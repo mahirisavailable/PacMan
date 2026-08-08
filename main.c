@@ -44,6 +44,7 @@ char maze[31][30] = {
 int main(void)
 {
     InitWindow(col * 25 + 2 * space, row * 25 + 1.5 * space, "PacMan");
+    InitAudioDevice();
     SetTargetFPS(60);
 
     // Texture Loading
@@ -57,6 +58,11 @@ int main(void)
         pac_up[i] = LoadTexture(TextFormat("assets/pacman-up/%d.png", i + 1));
         pac_down[i] = LoadTexture(TextFormat("assets/pacman-down/%d.png", i + 1));
     }
+
+    //sound loading
+    Sound chomp = LoadSound("assets/audio/pacman_chomp.wav");
+    Sound eatfruit = LoadSound("assets/audio/pacman_eatfruit.wav");
+
 
     // Variables
     const Vector2 origin = {0, 0};
@@ -142,13 +148,15 @@ int main(void)
             }
 
             // Point system
-            if (pac_speed.x!=pac_speed.y && maze[(int)round(y)][(int)round(x)] == '.') {
+            if (maze[(int)round(y)][(int)round(x)] == '.') {
                 point += 10;
                 maze[(int)round(y)][(int)round(x)] = ' ';
+                PlaySound(chomp);
             }
-            if (pac_speed.x!=pac_speed.y && maze[(int)round(y)][(int)round(x)] == 'o') {
+            if (maze[(int)round(y)][(int)round(x)] == 'o') {
                 point += 50;
                 maze[(int)round(y)][(int)round(x)] = ' ';
+                PlaySound(eatfruit);
             }
         }
 
@@ -183,8 +191,10 @@ int main(void)
                 DrawTexturePro(pac_left[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
             else if (nextmove == "right")
                 DrawTexturePro(pac_right[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
-            else
+            else if(nextmove=="null"){
                 DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
+                
+            }
         }
 
         EndDrawing();
@@ -200,6 +210,8 @@ int main(void)
     }
     UnloadTexture(bg);
     UnloadTexture(idle);
+    UnloadSound(chomp);
+    UnloadSound(eatfruit);
 
     CloseWindow();
 
