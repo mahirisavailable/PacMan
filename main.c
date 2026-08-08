@@ -5,7 +5,7 @@
 #define row 31
 #define col 28
 #define space 100
-#define speed 150
+#define speed 250
 
 char maze[31][30] = {
     "############################", // 0
@@ -31,7 +31,7 @@ char maze[31][30] = {
     "#............##............#", // 20
     "#.####.#####.##.#####.####.#", // 21
     "#.####.#####.##.#####.####.#", // 22
-    "#o..##................##..o#", // 23
+    "#o..##.......  .......##..o#", // 23
     "###.##.##.########.##.##.###", // 24
     "###.##.##.########.##.##.###", // 25
     "#......##....##....##......#", // 26
@@ -47,7 +47,7 @@ int main(void)
     SetTargetFPS(60);
 
     // Texture Loading
-    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], bg,idle;
+    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], bg, idle;
     bg = LoadTexture("assets/bg.png");
     idle = LoadTexture("assets/idle.png");
     for (int i = 0; i < 3; i++)
@@ -65,6 +65,8 @@ int main(void)
     // collision with maze
     char *nextmove = "null";
 
+    int point = 0;
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
@@ -72,9 +74,10 @@ int main(void)
 
         float dt = GetFrameTime();
         int curr = GetTime() * 20;
-        float alpha = (sinf(curr/2)+1.0f)/2.0f;
+        float alpha = (sinf(curr / 2) + 1.0f) / 2.0f;
 
         DrawTexturePro(bg, (Rectangle){0, 0, bg.width, bg.height}, (Rectangle){space, space - 20, col * 25, row * 25 + 15}, origin, 0, WHITE);
+        DrawText(TextFormat("Points: %d", point), 500, 50, 50, RAYWHITE);
 
         // Maze
         for (int i = 0; i < row; i++)
@@ -89,7 +92,7 @@ int main(void)
                 if (maze[i][j] == '.')
                     DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 3, RAYWHITE);
                 if (maze[i][j] == 'o')
-                    DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 10, (Color){255,0,0,alpha*255});
+                    DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 10, (Color){255, 0, 0, alpha * 255});
             }
         }
 
@@ -109,11 +112,14 @@ int main(void)
         y = (pac_pos.y - space) / 25;
         if (x + mor >= round(x) && x - mor <= round(x) && y + mor >= round(y) && y - mor <= round(y))
         {
+            // Collision with front block
             if (maze[(int)round(y + pac_speed.y / speed)][(int)round(x + pac_speed.x / speed)] == '#')
             {
                 pac_speed.x = 0;
                 pac_speed.y = 0;
             }
+
+            // Is next move available?
             if (nextmove == "left" && maze[(int)round(y)][(int)round(x) - 1] != '#')
             {
                 pac_speed.x = -speed;
@@ -134,15 +140,25 @@ int main(void)
                 pac_speed.x = 0;
                 pac_speed.y = speed;
             }
+
+            // Point system
+            if (pac_speed.x!=pac_speed.y && maze[(int)round(y)][(int)round(x)] == '.') {
+                point += 10;
+                maze[(int)round(y)][(int)round(x)] = ' ';
+            }
+            if (pac_speed.x!=pac_speed.y && maze[(int)round(y)][(int)round(x)] == 'o') {
+                point += 50;
+                maze[(int)round(y)][(int)round(x)] = ' ';
+            }
         }
 
         // Position Update
         pac_pos = Vector2Add(pac_pos, Vector2Scale(pac_speed, dt));
-        if (pac_pos.x < space)
+        if (pac_pos.x + 12.5 < space)
         {
             pac_pos.x += col * 25;
         }
-        else if (pac_pos.x > space + col * 25)
+        else if (pac_pos.x + 12.5 > space + col * 25)
         {
             pac_pos.x -= col * 25;
         }
@@ -167,7 +183,8 @@ int main(void)
                 DrawTexturePro(pac_left[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
             else if (nextmove == "right")
                 DrawTexturePro(pac_right[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
-            else DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5+12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
+            else
+                DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         }
 
         EndDrawing();
