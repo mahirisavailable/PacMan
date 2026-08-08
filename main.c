@@ -47,8 +47,9 @@ int main(void)
     SetTargetFPS(60);
 
     // Texture Loading
-    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], bg;
+    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], bg,idle;
     bg = LoadTexture("assets/bg.png");
+    idle = LoadTexture("assets/idle.png");
     for (int i = 0; i < 3; i++)
     {
         pac_left[i] = LoadTexture(TextFormat("assets/pacman-left/%d.png", i + 1));
@@ -71,6 +72,7 @@ int main(void)
 
         float dt = GetFrameTime();
         int curr = GetTime() * 20;
+        float alpha = (sinf(curr/2)+1.0f)/2.0f;
 
         DrawTexturePro(bg, (Rectangle){0, 0, bg.width, bg.height}, (Rectangle){space, space - 20, col * 25, row * 25 + 15}, origin, 0, WHITE);
 
@@ -87,7 +89,7 @@ int main(void)
                 if (maze[i][j] == '.')
                     DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 3, RAYWHITE);
                 if (maze[i][j] == 'o')
-                    DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 10, RED);
+                    DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 10, (Color){255,0,0,alpha*255});
             }
         }
 
@@ -165,6 +167,7 @@ int main(void)
                 DrawTexturePro(pac_left[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
             else if (nextmove == "right")
                 DrawTexturePro(pac_right[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
+            else DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, pacpac, origin, 0, WHITE);
         }
 
         EndDrawing();
@@ -179,6 +182,7 @@ int main(void)
         UnloadTexture(pac_down[i]);
     }
     UnloadTexture(bg);
+    UnloadTexture(idle);
 
     CloseWindow();
 
