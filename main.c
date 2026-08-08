@@ -51,6 +51,7 @@ int main(void)
     Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], bg, idle;
     bg = LoadTexture("assets/bg.png");
     idle = LoadTexture("assets/idle.png");
+    Texture2D apple = LoadTexture("assets/other/apple.png");
     for (int i = 0; i < 3; i++)
     {
         pac_left[i] = LoadTexture(TextFormat("assets/pacman-left/%d.png", i + 1));
@@ -59,10 +60,9 @@ int main(void)
         pac_down[i] = LoadTexture(TextFormat("assets/pacman-down/%d.png", i + 1));
     }
 
-    //sound loading
+    // sound loading
     Sound chomp = LoadSound("assets/audio/pacman_chomp.wav");
     Sound eatfruit = LoadSound("assets/audio/pacman_eatfruit.wav");
-
 
     // Variables
     const Vector2 origin = {0, 0};
@@ -72,6 +72,9 @@ int main(void)
     char *nextmove = "null";
 
     int point = 0;
+    int dots = 240;
+    int bigdots = 4;
+    float appletime;
 
     while (!WindowShouldClose())
     {
@@ -79,7 +82,8 @@ int main(void)
         ClearBackground(BLACK);
 
         float dt = GetFrameTime();
-        int curr = GetTime() * 20;
+        int curr = GetTime() * 15;
+        float currenttime = GetTime();
         float alpha = (sinf(curr / 2) + 1.0f) / 2.0f;
 
         DrawTexturePro(bg, (Rectangle){0, 0, bg.width, bg.height}, (Rectangle){space, space - 20, col * 25, row * 25 + 15}, origin, 0, WHITE);
@@ -99,8 +103,19 @@ int main(void)
                     DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 3, RAYWHITE);
                 if (maze[i][j] == 'o')
                     DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 10, (Color){255, 0, 0, alpha * 255});
+                if (maze[i][j] == '-')
+                    DrawRectangle(j * 25 + space, i * 25 + 18 + space, 25, 2, RAYWHITE);
             }
         }
+
+        // Apple logic
+        if (dots <= 150 && maze[17][13] == ' ')
+        {
+            maze[17][13] = 'a';
+            appletime = currenttime;
+        }
+        if (currenttime - appletime < 8 && maze[17][13] == 'a')
+            DrawTexturePro(apple, (Rectangle){0, 0, apple.width, apple.height}, (Rectangle){13 * 25 + space - 5 + 12.5, 17 * 25 + space - 5, 35, 35}, origin, 0, WHITE);
 
         // Direction input
         if (IsKeyPressed(KEY_LEFT))
@@ -148,14 +163,24 @@ int main(void)
             }
 
             // Point system
-            if (maze[(int)round(y)][(int)round(x)] == '.') {
+            if (maze[(int)round(y)][(int)round(x)] == '.')
+            {
                 point += 10;
+                dots--;
                 maze[(int)round(y)][(int)round(x)] = ' ';
                 PlaySound(chomp);
             }
-            if (maze[(int)round(y)][(int)round(x)] == 'o') {
+            if (maze[(int)round(y)][(int)round(x)] == 'o')
+            {
                 point += 50;
+                bigdots--;
                 maze[(int)round(y)][(int)round(x)] = ' ';
+                PlaySound(eatfruit);
+            }
+            if (maze[(int)round(y)][(int)round(x)] == 'a')
+            {
+                point += 200;
+                maze[(int)round(y)][(int)round(x)] = 'A';
                 PlaySound(eatfruit);
             }
         }
@@ -163,13 +188,9 @@ int main(void)
         // Position Update
         pac_pos = Vector2Add(pac_pos, Vector2Scale(pac_speed, dt));
         if (pac_pos.x + 12.5 < space)
-        {
             pac_pos.x += col * 25;
-        }
         else if (pac_pos.x + 12.5 > space + col * 25)
-        {
             pac_pos.x -= col * 25;
-        }
 
         // Draw PacMan
         Rectangle pacpac = {pac_pos.x - 5, pac_pos.y - 5, 35, 35};
@@ -191,16 +212,14 @@ int main(void)
                 DrawTexturePro(pac_left[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
             else if (nextmove == "right")
                 DrawTexturePro(pac_right[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
-            else if(nextmove=="null"){
+            else
                 DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
-                
-            }
         }
 
         EndDrawing();
     }
 
-    // Unload
+    // Unload Texture
     for (int i = 0; i < 3; i++)
     {
         UnloadTexture(pac_left[i]);
@@ -210,6 +229,9 @@ int main(void)
     }
     UnloadTexture(bg);
     UnloadTexture(idle);
+    UnloadTexture(apple);
+
+    // Unload Sound
     UnloadSound(chomp);
     UnloadSound(eatfruit);
 
