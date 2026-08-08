@@ -167,7 +167,7 @@ int main(void)
                 DrawTexturePro(pac_left[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
             else if (nextmove == "right")
                 DrawTexturePro(pac_right[1], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
-            else DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, pacpac, origin, 0, WHITE);
+            else DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5+12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         }
 
         EndDrawing();
