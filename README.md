@@ -1,16 +1,14 @@
 # PacMan
 A RayLib project to survive CSE-102, BUET 1-1
 
-# testing access (Raihan)
-
 # Developers
 - Mahir Ahmed
 - Raihan Biswas
 
 # Basic Checkpoints
-- ### Building the grids / maze:
+- ### Building the grids / maze: (Done)
 We can use a 2d character array (1d string array). It may help dividing the window in small cells & we can use markers to build the core logic
-- ### Main Sprite Movement & Collision management (with walls)
+- ### Main Sprite Movement & Collision management (Done)
 - ### Villain / Hunter sprites movement (random)
 - ### Death, Game Over, Heart / Life, Point management & Respawn feature, also pause/play button
 - ### Hunters being hunt feature & Hunter respawn
