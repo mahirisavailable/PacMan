@@ -24,6 +24,8 @@ int main(void)
     Texture2D logo = LoadTexture("assets/pacman-logo.png");
     Texture2D play = LoadTexture("assets/play-button.png");
     Texture2D hudai = LoadTexture("assets/other/hudai.png");
+    Texture2D blinky = LoadTexture("assets/ghosts/blinky.png");
+
     for (int i = 0; i < 3; i++)
     {
         pac_left[i] = LoadTexture(TextFormat("assets/pacman-left/%d.png", i + 1));
@@ -78,6 +80,12 @@ restart:
     const Vector2 origin = {0, 0};
     Vector2 pac_pos = {13 * 25 + space, 23 * 25 + space};
     Vector2 pac_speed = {0, 0};
+
+    // blinky
+    Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space};
+    Vector2 blinky_speed = {0, 0};
+    char *blinky_hmove = "right";
+    char *blinky_vmove = "up";
 
     // collision with maze
     char *nextmove = "null";
@@ -231,6 +239,99 @@ restart:
                 pac_pos.x -= col * 25;
         }
 
+        // blinky position and speed update
+        if ((currenttime-countdown)>7 && blinky_pos.x < pac_pos.x)
+        {
+            blinky_hmove = "right";
+        }
+        else if ((currenttime-countdown)>7 && blinky_pos.x > pac_pos.x)
+        {
+            blinky_hmove = "left";
+        }
+        if ((currenttime-countdown)>7 && blinky_pos.y < pac_pos.y)
+        {
+            blinky_vmove = "down";
+        }
+        else if ((currenttime-countdown)>7)
+        {
+            blinky_vmove = "up";
+        }
+
+        double blinky_x, blinky_y;
+        blinky_x = (blinky_pos.x - space) / 25;
+        blinky_y = (blinky_pos.y - space) / 25;
+
+        if (blinky_x + mor >= round(blinky_x) && blinky_x - mor <= round(blinky_x) && blinky_y + mor >= round(blinky_y) && blinky_y - mor <= round(blinky_y))
+        {
+            // Collision with front block
+            if (maze[(int)round(blinky_y + blinky_speed.y / speed)][(int)round(blinky_x + blinky_speed.x / speed)] == '#')
+            {
+                blinky_speed.x = 0;
+                blinky_speed.y = 0;
+            }
+            if (blinky_vmove == "up")
+            {
+                if (maze[(int)round(blinky_y)-1][(int)round(blinky_x)] != '#')
+                {
+                    blinky_speed.x = 0;
+                    blinky_speed.y = -speed;
+                }
+                else if (blinky_hmove == "right")
+                {
+                    if (maze[(int)round(blinky_y)][(int)round(blinky_x)+1] != '#')
+                    {
+                        blinky_speed.y = 0;
+                        blinky_speed.x = speed;
+                    }
+                }
+                else if (blinky_hmove == "left")
+                {
+                    if (maze[(int)round(blinky_y)][(int)round(blinky_x)-1] != '#')
+                    {
+                        blinky_speed.y = 0;
+                        blinky_speed.x = -speed;
+                    }
+                }
+            }
+            else if (blinky_vmove == "down")
+            {
+                if (maze[(int)round(blinky_y)+1][(int)round(blinky_x)] != '#')
+                {
+                    blinky_speed.x = 0;
+                    blinky_speed.y = speed;
+                }
+                else if (blinky_hmove == "right")
+                {
+                    if (maze[(int)round(blinky_y)][(int)round(blinky_x)+1] != '#')
+                    {
+                        blinky_speed.y = 0;
+                        blinky_speed.x = speed;
+                    }
+                }
+                else if (blinky_hmove == "left")
+                {
+                    if (maze[(int)round(blinky_y)][(int)round(blinky_x)-1] != '#')
+                    {
+                        blinky_speed.y =0;
+                        blinky_speed.x = -speed;
+                    }
+                }
+            }
+        }
+
+
+        //printing hmove vmove
+        // printf("vmove : %s , hmove : %s\n",blinky_vmove,blinky_hmove);
+
+        if ((currenttime - countdown) > 4)
+        {
+            blinky_pos = Vector2Add(blinky_pos, Vector2Scale(blinky_speed, dt));
+            if (blinky_pos.x + 12.5 < space)
+                blinky_pos.x += col * 25;
+            else if (blinky_pos.x + 12.5 > space + col * 25)
+                blinky_pos.x -= col * 25;
+        }
+
         // Draw PacMan
         Rectangle pacpac = {pac_pos.x - 5, pac_pos.y - 5, 35, 35};
         if (pac_speed.x < 0 && pac_speed.y == 0)
@@ -255,6 +356,11 @@ restart:
                 DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         }
 
+        // blinky
+        Rectangle blinkyblinky = {blinky_pos.x - 5, blinky_pos.y - 5, 35, 35};
+
+        DrawTexturePro(blinky, (Rectangle){0, 0, blinky.width, blinky.height}, blinkyblinky, origin, 0, WHITE);
+
         EndDrawing();
         if (dots == 0 & bigdots == 0)
         {
@@ -277,6 +383,7 @@ restart:
     UnloadTexture(logo);
     UnloadTexture(play);
     UnloadTexture(hudai);
+    UnloadTexture(blinky);
 
     // Unload Sound
     UnloadSound(chomp);
