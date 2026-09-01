@@ -1,31 +1,146 @@
 # PacMan
-A RayLib project to survive CSE-102, BUET 1-1
 
-# Developers
+A RayLib-based recreation of the classic PacMan game for CSE-102, BUET 1-1.
+
+## Developers
 - Mahir Ahmed
 - Raihan Biswas
 
-# Basic Checkpoints
-- ### Building the grids / maze: (Done)
-We can use a 2d character array (1d string array). It may help dividing the window in small cells & we can use markers to build the core logic
-- ### Main Sprite Movement & Collision management (Done)
-- ### Villain / Hunter sprites movement (random)
-- ### Death, Game Over, Heart / Life, Point management & Respawn feature, also pause/play button
-- ### Hunters being hunt feature & Hunter respawn
-- ### Adding audio & animation on events like death, respawn, mode switch
-Mode switch means basically the starting & ending of 'Hunter being hunt'
-- ### Menu, Countdown & Game Over page
-Menu can contain : Start Game, Some Modes, Sprite Options, Settings (for audio management) <br>
-Countdown at the start of a round <br>
-Game Over page can contain: your point, all time highest, 3 buttons (play again, go to menu, exit)
+---
 
-# Advance Checkpoints
-- ### Give 4 features to 4 hunters
-- ### Designing some unconventional modes with custom features
+## Core Features
 
-# Unconventional mode idea
-- ### main sprite and / or hunters can fire (always / for a few seconds)
-- ### main sprite and / or hunters can jump over walls (always / for a few seconds)
-- ### some escape portals that only allows main sprite
-- ### main sprite being invisible / invincible / extremely fast for a few seconds
-- ### main sprite being the hunter & target is to hunt all other sprites before they complete the game
+### Maze & Grid System ✅ Done
+- 31x28 grid-based maze layout using a 2D character array
+- Classic PacMan maze design with walls, corridors, and spawn zones
+- Walls block both player and ghost movement
+
+### Main Character Movement & Collision Management ✅ Done
+- Smooth directional movement (up, down, left, right)
+- Directional sprite animations for each movement direction
+- Collision detection with maze walls
+- Smooth directional transitions using velocity-based movement system
+
+### Ghost AI & Movement 🟡 Partially Done
+- **Blinky (Red Ghost)** ✅ Implemented with chase AI
+  - Pursues PacMan after 4-second countdown
+  - Navigates maze with wall collision detection
+  - Teleportation at maze edges
+- **Pinky, Inky, Clyde** ❌ Not implemented
+  - Need to be added with unique AI patterns
+
+### Dot Collection & Point Management ✅ Done
+- Regular dots (240 total): +10 points each
+- Large power dots (4 total): +50 points each
+- Special fruit (apple): +200 points when collected
+- Running score display
+
+### Death, Game Over & Respawn ✅ Done
+- 3-life system with heart display
+- Collision detection between PacMan and ghosts
+- Ghost and player respawn to starting positions on collision
+- Game restarts when all lives are lost
+
+### Invincibility/Power-Up Mode ❌ Remaining
+- Power-up mechanic when PacMan eats large dots
+- Ability for PacMan to eat ghosts during power-up
+- Ghost vulnerability state and respawn in ghost house
+- Mode switch visual/audio effects
+
+### Audio & Animations 🟡 Partially Done
+- ✅ Chomp sound effect (dot collection)
+- ✅ Fruit eating sound effect
+- ❌ Power-up mode audio/animations
+- ❌ Death/game over sound effects
+- ❌ Ghost mode switch effects
+
+### Menu System 🟡 Partially Done
+- ✅ Start menu with PacMan logo and play button
+- ❌ Game mode selection
+- ❌ Sprite/character customization
+- ❌ Settings/audio management
+
+### Countdown & Round Management 🟡 Partially Done
+- ✅ 4-second countdown before each round begins
+- ❌ Dedicated Game Over screen with final score
+- ❌ High score tracking and display
+
+---
+
+## Advanced Features
+
+### Individual Ghost Features ❌ Remaining
+- Unique AI patterns for each of the 4 ghosts
+- Different colors and sprites for each ghost
+- Custom movement behaviors
+
+### Unconventional Game Modes ❌ Remaining
+- **Mode 1**: Firing mechanic for PacMan and/or ghosts
+- **Mode 2**: Wall-jumping ability for PacMan and/or ghosts
+- **Mode 3**: Escape portals (PacMan-only passage)
+- **Mode 4**: Temporary invincibility/invisibility/speed boosts for PacMan
+- **Mode 5**: Reverse hunter mode (PacMan hunts ghosts before they escape)
+
+---
+
+## Project Statistics
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Core Gameplay | ✅ 70% | Fully playable with 1 ghost |
+| Feature Completeness | 🟡 50% | Core features done, missing ghosts & power-ups |
+| Overall Progress | 🟡 55% | Solid foundation, needs polish & remaining ghosts |
+
+---
+
+## How to Build & Run
+
+### Requirements
+- RayLib library
+- C compiler (gcc, clang, or MSVC)
+
+### Build
+```bash
+gcc main.c -o main -lraylib -lm
+```
+
+### Run
+```bash
+./main
+```
+
+---
+
+## Game Controls
+
+- **Arrow Keys**: Move PacMan (Up, Down, Left, Right)
+- **Left Mouse Click**: Start game from menu
+- **ESC**: Close game window
+
+---
+
+## File Structure
+
+```
+PacMan/
+├── main.c                    # Main game implementation
+├── assets/                   # Game resources
+│   ├── pacman-*.png          # PacMan animations
+│   ├── ghosts/               # Ghost sprites
+│   ├── other/                # Collectibles and UI elements
+│   └── audio/                # Sound effects
+└── README.md                 # This file
+```
+
+---
+
+## Next Steps
+
+1. Implement 3 additional ghosts (Pinky, Inky, Clyde) with unique AI patterns
+2. Add power-up mode mechanics
+3. Create a proper Game Over screen
+4. Refactor code into multiple files for better organization
+5. Implement game mode selection menu
+6. Add high score persistence
+7. Implement unconventional game modes
+
