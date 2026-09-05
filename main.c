@@ -40,6 +40,7 @@ int main(void)
     Sound eatfruit = LoadSound("assets/audio/pacman_eatfruit.wav");
 
     int point = 0;
+    int life = 3;
     bool menu = true;
 
 restart:
@@ -92,9 +93,9 @@ restart:
 
     int dots = 240;
     int bigdots = 4;
-    int life = 3;
     float appletime;
     float countdown;
+    float blinky_skatter;
 
     while (!WindowShouldClose())
     {
@@ -233,6 +234,7 @@ restart:
             else
                 DrawText("READY", width / 2 - 65, 17 * 25 + space - 5, 40, YELLOW);
             pac_speed = (Vector2){0, 0};
+            blinky_skatter = currenttime;
         }
 
         // Position Update
@@ -243,20 +245,28 @@ restart:
             pac_pos.x -= col * 25;
 
         // blinky position and speed update
-        if ((currenttime - countdown) > 7 && blinky_pos.x < pac_pos.x)
+        if ((currenttime - blinky_skatter) > 3 && blinky_pos.x + moe <= pac_pos.x)
         {
             blinky_hmove = "right";
         }
-        else if ((currenttime - countdown) > 7 && blinky_pos.x > pac_pos.x)
+        else if ((currenttime - blinky_skatter) > 3 && blinky_pos.x - moe >= pac_pos.x)
         {
             blinky_hmove = "left";
         }
-        if ((currenttime - countdown) > 7 && blinky_pos.y < pac_pos.y)
+        if ((currenttime - blinky_skatter) > 3 && blinky_pos.y + moe <= pac_pos.y)
         {
             blinky_vmove = "down";
         }
-        else if ((currenttime - countdown) > 7)
+        else if ((currenttime - blinky_skatter) > 3 && blinky_pos.y - moe >= pac_pos.y)
         {
+            blinky_vmove = "up";
+        }
+        if ((currenttime - blinky_skatter) > 10)
+        {
+            blinky_skatter = currenttime;
+        } else if ((currenttime - blinky_skatter) < 3)
+        {
+            blinky_hmove = "right";
             blinky_vmove = "up";
         }
 
@@ -274,7 +284,7 @@ restart:
             }
             if (blinky_vmove == "up")
             {
-                if (maze[(int)round(blinky_y) - 1][(int)round(blinky_x)] != '#')
+                if (maze[(int)round(blinky_y) - 1][(int)round(blinky_x)] != '#' && ((currenttime - blinky_skatter) < 3 || blinky_pos.y - 2*moe > pac_pos.y))
                 {
                     blinky_speed.x = 0;
                     blinky_speed.y = -speed;
@@ -298,7 +308,7 @@ restart:
             }
             else if (blinky_vmove == "down")
             {
-                if (maze[(int)round(blinky_y) + 1][(int)round(blinky_x)] != '#')
+                if (maze[(int)round(blinky_y) + 1][(int)round(blinky_x)] != '#' && maze[(int)round(blinky_y) + 1][(int)round(blinky_x)] != '-' && ((currenttime - blinky_skatter) < 3 || blinky_pos.y + 2*moe < pac_pos.y))
                 {
                     blinky_speed.x = 0;
                     blinky_speed.y = speed;
@@ -321,7 +331,7 @@ restart:
                 }
             }
         }
-        //  printf("vmove : %s , hmove : %s\n",blinky_vmove,blinky_hmove);
+        // printf("vmove : %f , hmove : %f\n", currenttime-blinky_skatter, blinky_skatter);
 
         if ((currenttime - countdown) > 4)
         {
@@ -370,14 +380,16 @@ restart:
             blinky_hmove = "right";
             blinky_vmove = "up";
         }
+
+        EndDrawing();
         if (life == 0)
         {
             menu = true;
+            life = 3;
+            point = 0;
             goto restart;
         }
-
-        EndDrawing();
-        if (dots == 0 & bigdots == 0)
+        if (dots == 0 && bigdots == 0)
         {
             countdown = currenttime;
             goto restart;
@@ -405,6 +417,7 @@ restart:
     UnloadSound(chomp);
     UnloadSound(eatfruit);
 
+    CloseAudioDevice();
     CloseWindow();
 
     return 0;
