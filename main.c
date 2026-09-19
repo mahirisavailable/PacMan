@@ -123,17 +123,22 @@ restart:
     Vector2 pac_speed = {0, 0};
 
     // blinky
-    Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space};
+    Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 15};
     Vector2 blinky_target;
     Vector2 blinky_speed = {0, -speed * 0.8};
     char *blinkymove = "up";
 
-
     // pinky
-    Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space};
+    Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space - 15};
     Vector2 pinky_target;
     Vector2 pinky_speed = {0, -speed * 0.8};
     char *pinkymove = "up";
+
+    // clyde
+    Vector2 clyde_pos = {14 * 25 + space, 15 * 25 + space};
+    Vector2 clyde_target;
+    Vector2 clyde_speed = {0, -speed * 0.8};
+    char *clydemove = "up";
 
     char *pacmove = "null";
 
@@ -340,6 +345,31 @@ restart:
                 pinky_pos.x -= col * 25;
         }
 
+        // clyde direction
+        double clyde_x, clyde_y;
+        clyde_x = (clyde_pos.x - space) / 25;
+        clyde_y = (clyde_pos.y - space) / 25;
+
+        if ((clyde_pos.x-blinky_pos.x) < 50 && (clyde_pos.x-blinky_pos.x) > -50 && (clyde_pos.y-blinky_pos.y) < 50 && (clyde_pos.y-blinky_pos.y) > -50)
+        {
+            clyde_target = (Vector2){0, height};
+        }
+        else
+        {
+            clyde_target = pac_pos;
+        }
+        ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe*0.8, speed*0.8);
+
+        // Position Update
+        if ((currenttime - countdown) > 16)
+        {
+            clyde_pos = Vector2Add(clyde_pos, Vector2Scale(clyde_speed, dt));
+            if (clyde_pos.x + 12.5 < space)
+                clyde_pos.x += col * 25;
+            else if (clyde_pos.x + 12.5 > space + col * 25)
+                clyde_pos.x -= col * 25;
+        }
+
         // Countdown
         if ((currenttime - countdown) < 4)
         {
@@ -384,24 +414,65 @@ restart:
         // pinky
         Rectangle pinkypinky = {pinky_pos.x - 5, pinky_pos.y - 5, 35, 35};
         DrawTexturePro(pinky, (Rectangle){0, 0, pinky.width, pinky.height}, pinkypinky, origin, 0, WHITE);
+        
+        // clyde
+        Rectangle clydeclyde = {clyde_pos.x - 5, clyde_pos.y - 5, 35, 35};
+        DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
 
         if (currenttime - countdown > 5 &&CheckCollisionRecs(blinkyblinky, pinkypinky)) {
             blinky_speed = Vector2Scale(blinky_speed, -1);
             pinky_speed = Vector2Scale(pinky_speed, -1);
+            if (blinkymove=="up") blinkymove = "down";
+            else if (blinkymove=="down") blinkymove = "up";
+            else if (blinkymove=="left") blinkymove = "right";
+            else blinkymove = "left";
+            if (pinkymove=="up") pinkymove = "down";
+            else if (pinkymove=="down") pinkymove = "up";
+            else if (pinkymove=="left") pinkymove = "right";
+            else pinkymove = "left";
         }
 
-        if (CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky))
+        if (currenttime - countdown > 11 &&CheckCollisionRecs(blinkyblinky, clydeclyde)) {
+            blinky_speed = Vector2Scale(blinky_speed, -1);
+            clyde_speed = Vector2Scale(clyde_speed, -1);
+            if (blinkymove=="up") blinkymove = "down";
+            else if (blinkymove=="down") blinkymove = "up";
+            else if (blinkymove=="left") blinkymove = "right";
+            else blinkymove = "left";
+            if (clydemove=="up") clydemove = "down";
+            else if (clydemove=="down") clydemove = "up";
+            else if (clydemove=="left") clydemove = "right";
+            else clydemove = "left";
+        }
+
+        if (currenttime - countdown > 11 &&CheckCollisionRecs(clydeclyde, pinkypinky)) {
+            clyde_speed = Vector2Scale(clyde_speed, -1);
+            pinky_speed = Vector2Scale(pinky_speed, -1);
+            if (clydemove=="up") clydemove = "down";
+            else if (clydemove=="down") clydemove = "up";
+            else if (clydemove=="left") clydemove = "right";
+            else clydemove = "left";
+            if (pinkymove=="up") pinkymove = "down";
+            else if (pinkymove=="down") pinkymove = "up";
+            else if (pinkymove=="left") pinkymove = "right";
+            else pinkymove = "left";
+        }
+
+        if (CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, clydeclyde))
         {
             life--;
             countdown = currenttime;
-            blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space};
-            pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space};
+            blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 15};
+            pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 15};
+            clyde_pos = (Vector2){14 * 25 + space, 15 * 25 + space};
             pac_pos = (Vector2){13 * 25 + space, 23 * 25 + space};
             pacmove = "null";
             blinkymove = "up";
             pinkymove = "up";
+            clydemove = "up";
             blinky_speed = (Vector2){0, -speed * 0.8};
             pinky_speed = (Vector2){0, -speed * 0.8};
+            clyde_speed = (Vector2){0, -speed * 0.8};
             appletime = currenttime - 8;
         }
 
