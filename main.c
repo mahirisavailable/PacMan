@@ -95,7 +95,7 @@ restart:
         "#d....d##d..d##d..d##d....d#", // 08
         "######.##### ## #####.######", // 09
         "     #.##### ## #####.#     ", // 10
-        "     #.##d   dd   d##.#     ", // 11
+        "     #.##d  dddd  d##.#     ", // 11
         "     #.## ###--### ##.#     ", // 12
         "######.## #      # ##.######", // 13
         "      d  d#      #d  d      ", // 14
@@ -107,7 +107,7 @@ restart:
         "#d....d..d..d##d..d..d....d#", // 20
         "#.####.#####.##.#####.####.#", // 21
         "#.####.#####.##.#####.####.#", // 22
-        "#o.d##d..d..d  d..d..d##d.o#", // 23
+        "#d.d##d..d..d  d..d..d##d.d#", // 23
         "###.##.##.########.##.##.###", // 24
         "###.##.##.########.##.##.###", // 25
         "#d.d..d##d..d##d..d##d..d.d#", // 26
@@ -123,16 +123,22 @@ restart:
     Vector2 pac_speed = {0, 0};
 
     // blinky
-    Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 20};
+    Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 15};
     Vector2 blinky_target;
     Vector2 blinky_speed = {0, -speed * 0.8};
     char *blinkymove = "up";
 
     // pinky
-    Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space - 20};
+    Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space - 15};
     Vector2 pinky_target;
     Vector2 pinky_speed = {0, -speed * 0.8};
     char *pinkymove = "up";
+
+    // inky
+    Vector2 inky_pos = {13 * 25 + space, 15 * 25 + space - 5};
+    Vector2 inky_target;
+    Vector2 inky_speed = {0, -speed * 0.8};
+    char *inkymove = "up";
 
     // clyde
     Vector2 clyde_pos = {14 * 25 + space, 15 * 25 + space - 5};
@@ -147,7 +153,8 @@ restart:
     float appletime;
     float countdown;
     float blinky_skatter = 12;
-    float pinky_skatter = 12;
+    float pinky_skatter = 22;
+    float inky_skatter = 32;
 
     while (!WindowShouldClose())
     {
@@ -226,7 +233,7 @@ restart:
         double x, y, moe = GetFrameTime() * speed / 50;
         x = (pac_pos.x - space) / 25;
         y = (pac_pos.y - space) / 25;
-        printf("%Lf %Lf %Lf %d\n", x, y, moe, x + moe >= round(x) && x - moe <= round(x) && y + moe >= round(y) && y - moe <= round(y));
+
         if (x + moe >= round(x) && x - moe <= round(x) && y + moe >= round(y) && y - moe <= round(y))
         {
             // Collision with front block
@@ -289,10 +296,6 @@ restart:
             pac_pos.x -= col * 25;
 
         // blinky direction
-        double blinky_x, blinky_y;
-        blinky_x = (blinky_pos.x - space) / 25;
-        blinky_y = (blinky_pos.y - space) / 25;
-
         if (currenttime - blinky_skatter < 3)
         {
             blinky_target = (Vector2){width, 0};
@@ -318,15 +321,11 @@ restart:
         }
 
         // pinky direction
-        double pinky_x, pinky_y;
-        pinky_x = (pinky_pos.x - space) / 25;
-        pinky_y = (pinky_pos.y - space) / 25;
-
         if (currenttime - pinky_skatter < 3)
         {
             pinky_target = (Vector2){0, 0};
         }
-        else if (currenttime - pinky_skatter < 14)
+        else if (currenttime - pinky_skatter < 10)
         {
             pinky_target = Vector2Add(pac_pos, Vector2Scale(pac_speed, dt*30));
         }
@@ -346,11 +345,32 @@ restart:
                 pinky_pos.x -= col * 25;
         }
 
-        // clyde direction
-        double clyde_x, clyde_y;
-        clyde_x = (clyde_pos.x - space) / 25;
-        clyde_y = (clyde_pos.y - space) / 25;
+        // inky direction
+        if (currenttime - inky_skatter < 3)
+        {
+            inky_target = (Vector2){width, height};
+        }
+        else if (currenttime - inky_skatter < 10)
+        {
+            inky_target = Vector2Add(pac_pos, (Vector2){pac_pos.x - blinky_pos.x, pac_pos.y - blinky_pos.y});
+        }
+        else
+        {
+            inky_skatter = currenttime;
+        }
+        ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe*0.8, speed*0.8);
 
+        // Position Update
+        if ((currenttime - countdown) > 24)
+        {
+            inky_pos = Vector2Add(inky_pos, Vector2Scale(inky_speed, dt));
+            if (inky_pos.x + 12.5 < space)
+                inky_pos.x += col * 25;
+            else if (inky_pos.x + 12.5 > space + col * 25)
+                inky_pos.x -= col * 25;
+        }
+
+        // clyde direction
         if ((clyde_pos.x-blinky_pos.x) < 100 && (clyde_pos.x-blinky_pos.x) > -100 && (clyde_pos.y-blinky_pos.y) < 100 && (clyde_pos.y-blinky_pos.y) > -100)
         {
             clyde_target = (Vector2){0, height};
@@ -362,7 +382,7 @@ restart:
         ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe*0.8, speed*0.8);
 
         // Position Update
-        if ((currenttime - countdown) > 24)
+        if ((currenttime - countdown) > 34)
         {
             clyde_pos = Vector2Add(clyde_pos, Vector2Scale(clyde_speed, dt));
             if (clyde_pos.x + 12.5 < space)
@@ -381,7 +401,8 @@ restart:
                 DrawText("READY", width / 2 - 65, 17 * 25 + space - 5, 40, YELLOW);
             pac_speed = (Vector2){0, 0};
             blinky_skatter = currenttime;
-            pinky_skatter = currenttime + 6;
+            pinky_skatter = currenttime + 10;
+            inky_skatter = currenttime + 20;
         }
 
         // Draw PacMan
@@ -416,11 +437,15 @@ restart:
         Rectangle pinkypinky = {pinky_pos.x - 5, pinky_pos.y - 5, 35, 35};
         DrawTexturePro(pinky, (Rectangle){0, 0, pinky.width, pinky.height}, pinkypinky, origin, 0, WHITE);
         
+        // inky
+        Rectangle inkyinky = {inky_pos.x - 5, inky_pos.y - 5, 35, 35};
+        DrawTexturePro(inky, (Rectangle){0, 0, inky.width, inky.height}, inkyinky, origin, 0, WHITE);
+        
         // clyde
         Rectangle clydeclyde = {clyde_pos.x - 5, clyde_pos.y - 5, 35, 35};
         DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
 
-        if (currenttime - countdown > 5 &&CheckCollisionRecs(blinkyblinky, pinkypinky)) {
+        if (currenttime - countdown > 15 &&CheckCollisionRecs(blinkyblinky, pinkypinky)) {
             blinky_speed = Vector2Scale(blinky_speed, -1);
             pinky_speed = Vector2Scale(pinky_speed, -1);
             if (blinkymove=="up") blinkymove = "down";
@@ -433,7 +458,33 @@ restart:
             else pinkymove = "left";
         }
 
-        if (currenttime - countdown > 15 &&CheckCollisionRecs(blinkyblinky, clydeclyde)) {
+        if (currenttime - countdown > 25 &&CheckCollisionRecs(blinkyblinky, inkyinky)) {
+            blinky_speed = Vector2Scale(blinky_speed, -1);
+            inky_speed = Vector2Scale(inky_speed, -1);
+            if (blinkymove=="up") blinkymove = "down";
+            else if (blinkymove=="down") blinkymove = "up";
+            else if (blinkymove=="left") blinkymove = "right";
+            else blinkymove = "left";
+            if (inkymove=="up") inkymove = "down";
+            else if (inkymove=="down") inkymove = "up";
+            else if (inkymove=="left") inkymove = "right";
+            else inkymove = "left";
+        }
+
+        if (currenttime - countdown > 25 &&CheckCollisionRecs(pinkypinky, inkyinky)) {
+            pinky_speed = Vector2Scale(pinky_speed, -1);
+            inky_speed = Vector2Scale(inky_speed, -1);
+            if (pinkymove=="up") pinkymove = "down";
+            else if (pinkymove=="down") pinkymove = "up";
+            else if (pinkymove=="left") pinkymove = "right";
+            else pinkymove = "left";
+            if (inkymove=="up") inkymove = "down";
+            else if (inkymove=="down") inkymove = "up";
+            else if (inkymove=="left") inkymove = "right";
+            else inkymove = "left";
+        }
+
+        if (currenttime - countdown > 35 &&CheckCollisionRecs(blinkyblinky, clydeclyde)) {
             blinky_speed = Vector2Scale(blinky_speed, -1);
             clyde_speed = Vector2Scale(clyde_speed, -1);
             if (blinkymove=="up") blinkymove = "down";
@@ -446,7 +497,7 @@ restart:
             else clydemove = "left";
         }
 
-        if (currenttime - countdown > 15 &&CheckCollisionRecs(clydeclyde, pinkypinky)) {
+        if (currenttime - countdown > 35 &&CheckCollisionRecs(clydeclyde, pinkypinky)) {
             clyde_speed = Vector2Scale(clyde_speed, -1);
             pinky_speed = Vector2Scale(pinky_speed, -1);
             if (clydemove=="up") clydemove = "down";
@@ -459,20 +510,36 @@ restart:
             else pinkymove = "left";
         }
 
-        if (CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, clydeclyde))
+        if (currenttime - countdown > 35 &&CheckCollisionRecs(clydeclyde, inkyinky)) {
+            clyde_speed = Vector2Scale(clyde_speed, -1);
+            inky_speed = Vector2Scale(inky_speed, -1);
+            if (clydemove=="up") clydemove = "down";
+            else if (clydemove=="down") clydemove = "up";
+            else if (clydemove=="left") clydemove = "right";
+            else clydemove = "left";
+            if (inkymove=="up") inkymove = "down";
+            else if (inkymove=="down") inkymove = "up";
+            else if (inkymove=="left") inkymove = "right";
+            else inkymove = "left";
+        }
+
+        if (CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, inkyinky) || CheckCollisionRecs(pacpac, clydeclyde))
         {
             life--;
             countdown = currenttime;
-            blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 20};
-            pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 20};
+            blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 15};
+            pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 15};
+            inky_pos = (Vector2){13 * 25 + space, 15 * 25 + space - 5};
             clyde_pos = (Vector2){14 * 25 + space, 15 * 25 + space - 5};
             pac_pos = (Vector2){13 * 25 + space, 23 * 25 + space};
             pacmove = "null";
             blinkymove = "up";
             pinkymove = "up";
+            inkymove = "up";
             clydemove = "up";
             blinky_speed = (Vector2){0, -speed * 0.8};
             pinky_speed = (Vector2){0, -speed * 0.8};
+            inky_speed = (Vector2){0, -speed * 0.8};
             clyde_speed = (Vector2){0, -speed * 0.8};
             pac_speed = (Vector2){0, 0};
             appletime = currenttime - 8;
@@ -577,7 +644,7 @@ void ghost_direction(char maze[][30], char decision[][30], Vector2 pos, Vector2 
         }
         else if (*move == "down")
         {
-            if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && target.y > pos.y)
+            if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && maze[(int)round(gy) + 1][(int)round(gx)] != '-' && target.y > pos.y)
             {
                 *move = "down";
                 g_speed->x = 0;
@@ -595,7 +662,7 @@ void ghost_direction(char maze[][30], char decision[][30], Vector2 pos, Vector2 
                 g_speed->y = 0;
                 g_speed->x = -gspd;
             }
-            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#')
+            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && maze[(int)round(gy) + 1][(int)round(gx)] != '-')
             {
                 *move = "down";
                 g_speed->x = 0;
@@ -634,7 +701,7 @@ void ghost_direction(char maze[][30], char decision[][30], Vector2 pos, Vector2 
                 g_speed->x = 0;
                 g_speed->y = -gspd;
             }
-            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && target.y > pos.y)
+            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && maze[(int)round(gy) + 1][(int)round(gx)] != '-' && target.y > pos.y)
             {
                 *move = "down";
                 g_speed->x = 0;
@@ -652,7 +719,7 @@ void ghost_direction(char maze[][30], char decision[][30], Vector2 pos, Vector2 
                 g_speed->x = 0;
                 g_speed->y = -gspd;
             }
-            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#')
+            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && maze[(int)round(gy) + 1][(int)round(gx)] != '-')
             {
                 *move = "down";
                 g_speed->x = 0;
@@ -679,7 +746,7 @@ void ghost_direction(char maze[][30], char decision[][30], Vector2 pos, Vector2 
                 g_speed->x = 0;
                 g_speed->y = -gspd;
             }
-            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && target.y > pos.y)
+            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && maze[(int)round(gy) + 1][(int)round(gx)] != '-' && target.y > pos.y)
             {
                 *move = "down";
                 g_speed->x = 0;
@@ -697,7 +764,7 @@ void ghost_direction(char maze[][30], char decision[][30], Vector2 pos, Vector2 
                 g_speed->x = 0;
                 g_speed->y = -gspd;
             }
-            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#')
+            else if (maze[(int)round(gy) + 1][(int)round(gx)] != '#' && maze[(int)round(gy) + 1][(int)round(gx)] != '-')
             {
                 *move = "down";
                 g_speed->x = 0;
