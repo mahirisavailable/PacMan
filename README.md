@@ -1,146 +1,141 @@
 # PacMan
 
-A RayLib-based recreation of the classic PacMan game for CSE-102, BUET 1-1.
+A C and raylib recreation of the classic Pac-Man game developed for the BUET CSE 1-1 project. The game features a grid-based maze, animated Pac-Man movement, four ghosts with distinct targeting behavior, collectibles, scoring, lives, audio, and a start menu.
 
 ## Developers
+
 - Mahir Ahmed
 - Raihan Biswas
 
----
+## Current Features
 
-## Core Features
+### Maze and movement
 
-### Maze & Grid System ✅ Done
-- 31x28 grid-based maze layout using a 2D character array
-- Classic PacMan maze design with walls, corridors, and spawn zones
-- Walls block both player and ghost movement
+- 31×28 character-grid maze implemented directly in `main.c`
+- Wall, corridor, ghost-house, and tunnel layout
+- Smooth, frame-time-based Pac-Man movement
+- Direction changes are accepted at grid intersections when the requested path is open
+- Horizontal tunnel wrap-around at both maze edges
+- Directional Pac-Man animation with three frames per direction
+- Idle Pac-Man sprite when the player is stationary
 
-### Main Character Movement & Collision Management ✅ Done
-- Smooth directional movement (up, down, left, right)
-- Directional sprite animations for each movement direction
-- Collision detection with maze walls
-- Smooth directional transitions using velocity-based movement system
+### Collectibles and scoring
 
-### Ghost AI & Movement 🟡 Partially Done
-- **Blinky (Red Ghost)** ✅ Implemented with chase AI
-  - Pursues PacMan after 4-second countdown
-  - Navigates maze with wall collision detection
-  - Teleportation at maze edges
-- **Pinky, Inky, Clyde** ❌ Not implemented
-  - Need to be added with unique AI patterns
+| Collectible | Points | Behavior |
+|---|---:|---|
+| Small dot | 10 | Removed from the maze and plays the chomp sound |
+| Power dot | 50 | Removed from the maze and plays the fruit/eat sound |
+| Apple | 200 | Appears after enough small dots have been collected and remains available for a limited time |
 
-### Dot Collection & Point Management ✅ Done
-- Regular dots (240 total): +10 points each
-- Large power dots (4 total): +50 points each
-- Special fruit (apple): +200 points when collected
-- Running score display
+The game tracks 240 small dots and four power dots. An apple appears at a fixed maze position after the small-dot count reaches 150 or fewer, stays visible for eight seconds, and can be collected once.
 
-### Death, Game Over & Respawn ✅ Done
-- 3-life system with heart display
-- Collision detection between PacMan and ghosts
-- Ghost and player respawn to starting positions on collision
-- Game restarts when all lives are lost
+### Four ghost system
 
-### Invincibility/Power-Up Mode ❌ Remaining
-- Power-up mechanic when PacMan eats large dots
-- Ability for PacMan to eat ghosts during power-up
-- Ghost vulnerability state and respawn in ghost house
-- Mode switch visual/audio effects
+All four ghosts are present and rendered with their own sprites:
 
-### Audio & Animations 🟡 Partially Done
-- ✅ Chomp sound effect (dot collection)
-- ✅ Fruit eating sound effect
-- ❌ Power-up mode audio/animations
-- ❌ Death/game over sound effects
-- ❌ Ghost mode switch effects
+- **Blinky (red):** targets Pac-Man during chase phases
+- **Pinky (pink):** targets a position ahead of Pac-Man based on the current movement vector
+- **Inky (cyan):** calculates a target using Pac-Man's position and Blinky's position
+- **Clyde (orange):** chases Pac-Man when far away and retreats toward the lower-left corner when close to Blinky
 
-### Menu System 🟡 Partially Done
-- ✅ Start menu with PacMan logo and play button
-- ❌ Game mode selection
-- ❌ Sprite/character customization
-- ❌ Settings/audio management
+Ghost movement uses the shared `ghost_direction` function. It evaluates available maze paths at decision points, avoids walls and the ghost-house gate where appropriate, and follows each ghost's current target. Ghosts are released in stages after the round countdown:
 
-### Countdown & Round Management 🟡 Partially Done
-- ✅ 4-second countdown before each round begins
-- ❌ Dedicated Game Over screen with final score
-- ❌ High score tracking and display
+- Blinky: immediately after the countdown
+- Pinky: after 10 additional seconds
+- Inky: after 20 additional seconds
+- Clyde: after 30 additional seconds
 
----
+Ghosts wrap around the horizontal tunnel and reverse direction when they collide. The repeated ghost-collision logic is centralized in the `ghost_bounce` function.
 
-## Advanced Features
+### Lives, collisions, and rounds
 
-### Individual Ghost Features ❌ Remaining
-- Unique AI patterns for each of the 4 ghosts
-- Different colors and sprites for each ghost
-- Custom movement behaviors
+- Three lives are displayed with heart textures in the HUD
+- A collision with any ghost removes one life
+- After a collision, Pac-Man and all ghosts return to their starting positions and the round countdown restarts
+- Losing all lives resets the score and starts a new game from the menu
+- Clearing all small and power dots starts a new round
+- A four-second countdown displays `3`, `2`, `1`, and `READY` before movement begins
 
-### Unconventional Game Modes ❌ Remaining
-- **Mode 1**: Firing mechanic for PacMan and/or ghosts
-- **Mode 2**: Wall-jumping ability for PacMan and/or ghosts
-- **Mode 3**: Escape portals (PacMan-only passage)
-- **Mode 4**: Temporary invincibility/invisibility/speed boosts for PacMan
-- **Mode 5**: Reverse hunter mode (PacMan hunts ghosts before they escape)
+### Menu, rendering, and audio
 
----
+- Start menu with Pac-Man logo, play button, and decorative HUD artwork
+- Score and remaining-life display during gameplay
+- Maze background and animated power-dot rendering
+- Chomp sound for small dots
+- Eat-fruit sound for power dots and the apple
+- Textures are unloaded and the audio/window systems are closed when the program exits
 
-## Project Statistics
+## Controls
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Core Gameplay | ✅ 70% | Fully playable with 1 ghost |
-| Feature Completeness | 🟡 50% | Core features done, missing ghosts & power-ups |
-| Overall Progress | 🟡 55% | Solid foundation, needs polish & remaining ghosts |
+- **Arrow keys:** Move Pac-Man
+- **Left mouse button:** Start the game from the menu by clicking the play button
+- **Esc:** Close the game window
 
----
+## Requirements
 
-## How to Build & Run
+- A C compiler such as GCC, Clang, or MSVC
+- [raylib](https://www.raylib.com/)
+- A desktop environment capable of opening a raylib window
 
-### Requirements
-- RayLib library
-- C compiler (gcc, clang, or MSVC)
+The game loads resources using paths under `assets/`, so run the executable from the repository root or ensure the working directory contains the `assets` directory.
 
-### Build
+## Build and Run
+
+### Linux
+
 ```bash
 gcc main.c -o main -lraylib -lm
-```
-
-### Run
-```bash
 ./main
 ```
 
----
+Depending on how raylib is installed, additional platform libraries may be required by the linker.
 
-## Game Controls
+### Windows
 
-- **Arrow Keys**: Move PacMan (Up, Down, Left, Right)
-- **Left Mouse Click**: Start game from menu
-- **ESC**: Close game window
+The repository includes a prebuilt `main.exe`. It can be run from the repository root so that the relative asset paths resolve correctly. To build from source, use a raylib-compatible GCC/MinGW or MSVC setup and link raylib with the platform libraries required by that installation.
 
----
+## Project Structure
 
-## File Structure
-
-```
+```text
 PacMan/
-├── main.c                    # Main game implementation
-├── assets/                   # Game resources
-│   ├── pacman-*.png          # PacMan animations
-│   ├── ghosts/               # Ghost sprites
-│   ├── other/                # Collectibles and UI elements
-│   └── audio/                # Sound effects
-└── README.md                 # This file
+├── main.c                         # Game loop, maze, gameplay, ghost AI, and rendering
+├── main.exe                       # Prebuilt Windows executable
+├── raylib_template.code-workspace # VS Code workspace configuration
+├── assets/
+│   ├── bg.png                     # Maze background
+│   ├── idle.png                   # Pac-Man idle sprite
+│   ├── pacman-logo.png            # Main-menu logo
+│   ├── play-button.png            # Main-menu play button
+│   ├── pacman-left/               # Three left-facing animation frames
+│   ├── pacman-right/              # Three right-facing animation frames
+│   ├── pacman-up/                 # Three upward-facing animation frames
+│   ├── pacman-down/               # Three downward-facing animation frames
+│   ├── ghosts/                    # Blinky, Pinky, Inky, and Clyde sprites
+│   ├── other/                     # Apple, heart, and HUD artwork
+│   └── audio/                     # Chomp and fruit/eat sound effects
+└── README.md
 ```
 
----
+## Implementation Notes
 
-## Next Steps
+- The game is currently concentrated in `main.c`.
+- Raylib's `Vector2` and collision helpers are used for movement, targeting, and collision detection.
+- The maze uses `#` for walls, `.` for small dots, `o` for power dots, `-` for the ghost-house gate, and runtime markers for collected or temporary items.
+- Ghost decision points are represented by a separate `decision` grid.
+- Ghost target behavior is implemented as a chase/scatter-style system rather than a full reproduction of the original arcade game's pathfinding.
 
-1. Implement 3 additional ghosts (Pinky, Inky, Clyde) with unique AI patterns
-2. Add power-up mode mechanics
-3. Create a proper Game Over screen
-4. Refactor code into multiple files for better organization
-5. Implement game mode selection menu
-6. Add high score persistence
-7. Implement unconventional game modes
+## Remaining Work
 
+The current implementation does not yet include:
+
+- Power mode after collecting a power dot
+- Ghost vulnerability and eating ghosts
+- A dedicated game-over screen or persistent high-score system
+- Additional game-mode selection or character customization
+- Settings and configurable audio controls
+- Advanced or unconventional modes such as firing, wall-jumping, portals, or temporary speed/invisibility boosts
+- Separation of the single source file into smaller modules
+
+## License
+
+No license has been specified for this repository yet.
