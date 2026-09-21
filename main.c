@@ -123,19 +123,19 @@ restart:
     Vector2 pac_speed = {0, 0};
 
     // blinky
-    Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 15};
+    Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 20};
     Vector2 blinky_target;
     Vector2 blinky_speed = {0, -speed * 0.8};
     char *blinkymove = "up";
 
     // pinky
-    Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space - 15};
+    Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space - 20};
     Vector2 pinky_target;
     Vector2 pinky_speed = {0, -speed * 0.8};
     char *pinkymove = "up";
 
     // clyde
-    Vector2 clyde_pos = {14 * 25 + space, 15 * 25 + space};
+    Vector2 clyde_pos = {14 * 25 + space, 15 * 25 + space - 5};
     Vector2 clyde_target;
     Vector2 clyde_speed = {0, -speed * 0.8};
     char *clydemove = "up";
@@ -226,6 +226,7 @@ restart:
         double x, y, moe = GetFrameTime() * speed / 50;
         x = (pac_pos.x - space) / 25;
         y = (pac_pos.y - space) / 25;
+        printf("%Lf %Lf %Lf %d\n", x, y, moe, x + moe >= round(x) && x - moe <= round(x) && y + moe >= round(y) && y - moe <= round(y));
         if (x + moe >= round(x) && x - moe <= round(x) && y + moe >= round(y) && y - moe <= round(y))
         {
             // Collision with front block
@@ -325,7 +326,7 @@ restart:
         {
             pinky_target = (Vector2){0, 0};
         }
-        else if (currenttime - pinky_skatter < 10)
+        else if (currenttime - pinky_skatter < 14)
         {
             pinky_target = Vector2Add(pac_pos, Vector2Scale(pac_speed, dt*30));
         }
@@ -336,7 +337,7 @@ restart:
         ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe*0.8, speed*0.8);
 
         // Position Update
-        if ((currenttime - countdown) > 10)
+        if ((currenttime - countdown) > 14)
         {
             pinky_pos = Vector2Add(pinky_pos, Vector2Scale(pinky_speed, dt));
             if (pinky_pos.x + 12.5 < space)
@@ -350,7 +351,7 @@ restart:
         clyde_x = (clyde_pos.x - space) / 25;
         clyde_y = (clyde_pos.y - space) / 25;
 
-        if ((clyde_pos.x-blinky_pos.x) < 50 && (clyde_pos.x-blinky_pos.x) > -50 && (clyde_pos.y-blinky_pos.y) < 50 && (clyde_pos.y-blinky_pos.y) > -50)
+        if ((clyde_pos.x-blinky_pos.x) < 100 && (clyde_pos.x-blinky_pos.x) > -100 && (clyde_pos.y-blinky_pos.y) < 100 && (clyde_pos.y-blinky_pos.y) > -100)
         {
             clyde_target = (Vector2){0, height};
         }
@@ -361,7 +362,7 @@ restart:
         ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe*0.8, speed*0.8);
 
         // Position Update
-        if ((currenttime - countdown) > 16)
+        if ((currenttime - countdown) > 24)
         {
             clyde_pos = Vector2Add(clyde_pos, Vector2Scale(clyde_speed, dt));
             if (clyde_pos.x + 12.5 < space)
@@ -432,7 +433,7 @@ restart:
             else pinkymove = "left";
         }
 
-        if (currenttime - countdown > 11 &&CheckCollisionRecs(blinkyblinky, clydeclyde)) {
+        if (currenttime - countdown > 15 &&CheckCollisionRecs(blinkyblinky, clydeclyde)) {
             blinky_speed = Vector2Scale(blinky_speed, -1);
             clyde_speed = Vector2Scale(clyde_speed, -1);
             if (blinkymove=="up") blinkymove = "down";
@@ -445,7 +446,7 @@ restart:
             else clydemove = "left";
         }
 
-        if (currenttime - countdown > 11 &&CheckCollisionRecs(clydeclyde, pinkypinky)) {
+        if (currenttime - countdown > 15 &&CheckCollisionRecs(clydeclyde, pinkypinky)) {
             clyde_speed = Vector2Scale(clyde_speed, -1);
             pinky_speed = Vector2Scale(pinky_speed, -1);
             if (clydemove=="up") clydemove = "down";
@@ -462,9 +463,9 @@ restart:
         {
             life--;
             countdown = currenttime;
-            blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 15};
-            pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 15};
-            clyde_pos = (Vector2){14 * 25 + space, 15 * 25 + space};
+            blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 20};
+            pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 20};
+            clyde_pos = (Vector2){14 * 25 + space, 15 * 25 + space - 5};
             pac_pos = (Vector2){13 * 25 + space, 23 * 25 + space};
             pacmove = "null";
             blinkymove = "up";
@@ -473,6 +474,7 @@ restart:
             blinky_speed = (Vector2){0, -speed * 0.8};
             pinky_speed = (Vector2){0, -speed * 0.8};
             clyde_speed = (Vector2){0, -speed * 0.8};
+            pac_speed = (Vector2){0, 0};
             appletime = currenttime - 8;
         }
 
