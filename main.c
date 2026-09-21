@@ -8,6 +8,7 @@
 #define speed 250
 
 void ghost_direction(char[][30], char[][30], Vector2, Vector2*, char**, Vector2, double, double);
+void ghost_bounce(Vector2*, Vector2*, char**, char**);
 
 int main(void)
 {
@@ -445,83 +446,23 @@ restart:
         Rectangle clydeclyde = {clyde_pos.x - 5, clyde_pos.y - 5, 35, 35};
         DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
 
-        if (currenttime - countdown > 15 &&CheckCollisionRecs(blinkyblinky, pinkypinky)) {
-            blinky_speed = Vector2Scale(blinky_speed, -1);
-            pinky_speed = Vector2Scale(pinky_speed, -1);
-            if (blinkymove=="up") blinkymove = "down";
-            else if (blinkymove=="down") blinkymove = "up";
-            else if (blinkymove=="left") blinkymove = "right";
-            else blinkymove = "left";
-            if (pinkymove=="up") pinkymove = "down";
-            else if (pinkymove=="down") pinkymove = "up";
-            else if (pinkymove=="left") pinkymove = "right";
-            else pinkymove = "left";
-        }
+        if (currenttime - countdown > 15 && CheckCollisionRecs(blinkyblinky, pinkypinky))
+            ghost_bounce(&blinky_speed, &pinky_speed, &blinkymove, &pinkymove);
 
-        if (currenttime - countdown > 25 &&CheckCollisionRecs(blinkyblinky, inkyinky)) {
-            blinky_speed = Vector2Scale(blinky_speed, -1);
-            inky_speed = Vector2Scale(inky_speed, -1);
-            if (blinkymove=="up") blinkymove = "down";
-            else if (blinkymove=="down") blinkymove = "up";
-            else if (blinkymove=="left") blinkymove = "right";
-            else blinkymove = "left";
-            if (inkymove=="up") inkymove = "down";
-            else if (inkymove=="down") inkymove = "up";
-            else if (inkymove=="left") inkymove = "right";
-            else inkymove = "left";
-        }
+        if (currenttime - countdown > 25 && CheckCollisionRecs(blinkyblinky, inkyinky))
+            ghost_bounce(&blinky_speed, &inky_speed, &blinkymove, &inkymove);
 
-        if (currenttime - countdown > 25 &&CheckCollisionRecs(pinkypinky, inkyinky)) {
-            pinky_speed = Vector2Scale(pinky_speed, -1);
-            inky_speed = Vector2Scale(inky_speed, -1);
-            if (pinkymove=="up") pinkymove = "down";
-            else if (pinkymove=="down") pinkymove = "up";
-            else if (pinkymove=="left") pinkymove = "right";
-            else pinkymove = "left";
-            if (inkymove=="up") inkymove = "down";
-            else if (inkymove=="down") inkymove = "up";
-            else if (inkymove=="left") inkymove = "right";
-            else inkymove = "left";
-        }
+        if (currenttime - countdown > 25 && CheckCollisionRecs(pinkypinky, inkyinky))
+            ghost_bounce(&pinky_speed, &inky_speed, &pinkymove, &inkymove);
 
-        if (currenttime - countdown > 35 &&CheckCollisionRecs(blinkyblinky, clydeclyde)) {
-            blinky_speed = Vector2Scale(blinky_speed, -1);
-            clyde_speed = Vector2Scale(clyde_speed, -1);
-            if (blinkymove=="up") blinkymove = "down";
-            else if (blinkymove=="down") blinkymove = "up";
-            else if (blinkymove=="left") blinkymove = "right";
-            else blinkymove = "left";
-            if (clydemove=="up") clydemove = "down";
-            else if (clydemove=="down") clydemove = "up";
-            else if (clydemove=="left") clydemove = "right";
-            else clydemove = "left";
-        }
+        if (currenttime - countdown > 35 && CheckCollisionRecs(blinkyblinky, clydeclyde))
+            ghost_bounce(&blinky_speed, &clyde_speed, &blinkymove, &clydemove);
 
-        if (currenttime - countdown > 35 &&CheckCollisionRecs(clydeclyde, pinkypinky)) {
-            clyde_speed = Vector2Scale(clyde_speed, -1);
-            pinky_speed = Vector2Scale(pinky_speed, -1);
-            if (clydemove=="up") clydemove = "down";
-            else if (clydemove=="down") clydemove = "up";
-            else if (clydemove=="left") clydemove = "right";
-            else clydemove = "left";
-            if (pinkymove=="up") pinkymove = "down";
-            else if (pinkymove=="down") pinkymove = "up";
-            else if (pinkymove=="left") pinkymove = "right";
-            else pinkymove = "left";
-        }
-
-        if (currenttime - countdown > 35 &&CheckCollisionRecs(clydeclyde, inkyinky)) {
-            clyde_speed = Vector2Scale(clyde_speed, -1);
-            inky_speed = Vector2Scale(inky_speed, -1);
-            if (clydemove=="up") clydemove = "down";
-            else if (clydemove=="down") clydemove = "up";
-            else if (clydemove=="left") clydemove = "right";
-            else clydemove = "left";
-            if (inkymove=="up") inkymove = "down";
-            else if (inkymove=="down") inkymove = "up";
-            else if (inkymove=="left") inkymove = "right";
-            else inkymove = "left";
-        }
+        if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, pinkypinky))
+            ghost_bounce(&clyde_speed, &pinky_speed, &clydemove, &pinkymove);
+        
+        if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, inkyinky))
+            ghost_bounce(&clyde_speed, &inky_speed, &clydemove, &inkymove);
 
         if (CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, inkyinky) || CheckCollisionRecs(pacpac, clydeclyde))
         {
@@ -778,4 +719,20 @@ void ghost_direction(char maze[][30], char decision[][30], Vector2 pos, Vector2 
             }
         }
     }
+}
+
+void ghost_bounce(Vector2 *g1_speed, Vector2 *g2_speed, char **g1move, char **g2move)
+{
+    *g1_speed = Vector2Scale(*g1_speed, -1);
+    *g2_speed = Vector2Scale(*g2_speed, -1);
+
+    if (*g1move == "up") *g1move = "down";
+    else if (*g1move == "down") *g1move = "up";
+    else if (*g1move == "left") *g1move = "right";
+    else *g1move = "left";
+
+    if (*g2move == "up") *g2move = "down";
+    else if (*g2move == "down") *g2move = "up";
+    else if (*g2move == "left") *g2move = "right";
+    else *g2move = "left";
 }
