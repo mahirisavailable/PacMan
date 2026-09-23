@@ -20,9 +20,9 @@ int main(void)
     SetTargetFPS(60);
 
     // Texture Loading
-    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], bg, idle;
-    bg = LoadTexture("assets/bg.png");
-    idle = LoadTexture("assets/idle.png");
+    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3];
+    Texture2D bg = LoadTexture("assets/bg.png");
+    Texture2D idle = LoadTexture("assets/idle.png");
     Texture2D apple = LoadTexture("assets/other/apple.png");
     Texture2D heart = LoadTexture("assets/other/heart.png");
     Texture2D logo = LoadTexture("assets/pacman-logo.png");
@@ -124,24 +124,28 @@ restart:
     Vector2 pac_pos = {13 * 25 + space, 23 * 25 + space};
     Vector2 pac_speed = {0, 0};
     Vector2 neg_pac_pos = {0, 0};
+    char *pacmove = "null";
 
     // blinky
     Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 15};
     Vector2 blinky_target;
     Vector2 blinky_speed = {0, -speed * 0.8};
     char *blinkymove = "up";
+    float blinky_skatter = 12;
 
     // pinky
     Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space - 15};
     Vector2 pinky_target;
     Vector2 pinky_speed = {0, -speed * 0.8};
     char *pinkymove = "up";
+    float pinky_skatter = 22;
 
     // inky
     Vector2 inky_pos = {13 * 25 + space, 15 * 25 + space - 5};
     Vector2 inky_target;
     Vector2 inky_speed = {0, -speed * 0.8};
     char *inkymove = "up";
+    float inky_skatter = 32;
 
     // clyde
     Vector2 clyde_pos = {14 * 25 + space, 15 * 25 + space - 5};
@@ -149,19 +153,25 @@ restart:
     Vector2 clyde_speed = {0, -speed * 0.8};
     char *clydemove = "up";
 
-    char *pacmove = "null";
-
     int dots = 240;
     int bigdots = 4;
     float appletime;
     float countdown;
-    float blinky_skatter = 12;
-    float pinky_skatter = 22;
-    float inky_skatter = 32;
 
     // invincible mode
     bool invincible_mode = false;
-    int invincible_time = 0;
+    float invincible_time = 0;
+
+    // High Score
+    FILE *faah = fopen("record.txt", "r+");
+    char strscore[20];
+    int hscore = 0;
+    if (faah)
+    {
+        fgets(strscore, 20, faah);
+        for (int i = 0; strscore[i] != '\n'; i++)
+            hscore = hscore * 10 + (int)(strscore[i] - '0');
+    }
 
     while (!WindowShouldClose())
     {
@@ -188,10 +198,15 @@ restart:
             continue;
         }
 
+        if (hscore < point)
+            hscore = point;
+
         DrawTexturePro(bg, (Rectangle){0, 0, bg.width, bg.height}, (Rectangle){space, space - 20, col * 25, row * 25 + 15}, origin, 0, WHITE);
-        DrawText(TextFormat("Points: %d", point), width - space - 300, space - 50, 50, RAYWHITE);
-        for (int i = 0; i < life; i++)
-            DrawTexturePro(heart, (Rectangle){0, 0, heart.width, heart.height}, (Rectangle){space + 50 * i, space - 50, 50, 50}, origin, 0, WHITE);
+        DrawText(TextFormat("Score: %d", point), space, space - 50, 50, RAYWHITE);
+        if (faah)
+            DrawText(TextFormat("Highest Score: %d", hscore), space, height - 50, 50, RAYWHITE);
+        for (int i = 1; i <= life; i++)
+            DrawTexturePro(heart, (Rectangle){0, 0, heart.width, heart.height}, (Rectangle){width - space - 60*i, space - 50, 50, 50}, origin, 0, WHITE);
 
         // Maze
         for (int i = 0; i < row; i++)
@@ -244,7 +259,7 @@ restart:
         }
 
         // Direction execution & wall conflict
-        double x, y, moe = GetFrameTime() * speed / 50;
+        double x, y, moe = dt * speed / 50;
         x = (pac_pos.x - space) / 25;
         y = (pac_pos.y - space) / 25;
 
@@ -273,7 +288,7 @@ restart:
                 pac_speed.x = 0;
                 pac_speed.y = -speed;
             }
-            else if (pacmove == "down" && maze[(int)round(y) + 1][(int)round(x)] != '#')
+            else if (pacmove == "down" && maze[(int)round(y) + 1][(int)round(x)] != '#' && maze[(int)round(y) + 1][(int)round(x)] != '-')
             {
                 pac_speed.x = 0;
                 pac_speed.y = speed;
@@ -332,8 +347,10 @@ restart:
         {
             blinky_skatter = currenttime;
         }
-
-        ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * 0.8, speed * 0.8);
+        if (invincible_mode)
+            ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * 0.8, speed * 0.6);
+        else
+            ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 4)
@@ -362,7 +379,10 @@ restart:
         {
             pinky_skatter = currenttime;
         }
-        ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * 0.8, speed * 0.8);
+        if (invincible_mode)
+            ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * 0.8, speed * 0.6);
+        else
+            ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 14)
@@ -391,7 +411,10 @@ restart:
         {
             inky_skatter = currenttime;
         }
-        ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * 0.8, speed * 0.8);
+        if (invincible_mode)
+            ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * 0.8, speed * 0.6);
+        else
+            ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 24)
@@ -416,7 +439,10 @@ restart:
         {
             clyde_target = pac_pos;
         }
-        ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * 0.8, speed * 0.8);
+        if (invincible_mode)
+            ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * 0.8, speed * 0.6);
+        else
+            ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 34)
@@ -538,35 +564,47 @@ restart:
         {
             if (CheckCollisionRecs(pacpac, blinkyblinky))
             {
+                PlaySound(eatfruit);
                 blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 15};
                 blinkymove = "up";
-                blinky_speed = (Vector2){0, -speed * 0.8};
+                blinky_speed = (Vector2){0, -speed * 0.3};
                 point += 200;
             }
             else if (CheckCollisionRecs(pacpac, pinkypinky))
             {
+                PlaySound(eatfruit);
                 pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 15};
                 pinkymove = "up";
-                pinky_speed = (Vector2){0, -speed * 0.8};
+                pinky_speed = (Vector2){0, -speed * 0.3};
                 point += 200;
             }
             else if (CheckCollisionRecs(pacpac, inkyinky))
             {
+                PlaySound(eatfruit);
                 inky_pos = (Vector2){13 * 25 + space, 15 * 25 + space - 5};
                 inkymove = "up";
-                inky_speed = (Vector2){0, -speed * 0.8};
+                inky_speed = (Vector2){0, -speed * 0.3};
                 point += 200;
             }
             else if (CheckCollisionRecs(pacpac, clydeclyde))
             {
+                PlaySound(eatfruit);
                 clyde_pos = (Vector2){14 * 25 + space, 15 * 25 + space - 5};
                 clydemove = "up";
-                clyde_speed = (Vector2){0, -speed * 0.8};
+                clyde_speed = (Vector2){0, -speed * 0.3};
                 point += 200;
             }
         }
 
         EndDrawing();
+
+        if (hscore <= point)
+        {
+            faah = freopen("record.txt", "w", faah);
+            fputs(TextFormat("%d\n", point), faah);
+        }
+        fclose(faah);
+
         if (life == 0)
         {
             menu = true;
