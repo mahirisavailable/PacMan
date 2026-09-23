@@ -7,8 +7,8 @@
 #define space 100
 #define speed 250
 
-void ghost_direction(char[][30], char[][30], Vector2, Vector2*, char**, Vector2, double, double);
-void ghost_bounce(Vector2*, Vector2*, char**, char**);
+void ghost_direction(char[][30], char[][30], Vector2, Vector2 *, char **, Vector2, double, double);
+void ghost_bounce(Vector2 *, Vector2 *, char **, char **);
 
 int main(void)
 {
@@ -32,6 +32,7 @@ int main(void)
     Texture2D pinky = LoadTexture("assets/ghosts/pinky.png");
     Texture2D inky = LoadTexture("assets/ghosts/inky.png");
     Texture2D clyde = LoadTexture("assets/ghosts/clyde.png");
+    Texture2D blueghost = LoadTexture("assets/ghosts/blue_ghost.png");
 
     for (int i = 0; i < 3; i++)
     {
@@ -122,6 +123,7 @@ restart:
     const Vector2 origin = {0, 0};
     Vector2 pac_pos = {13 * 25 + space, 23 * 25 + space};
     Vector2 pac_speed = {0, 0};
+    Vector2 neg_pac_pos = {0, 0};
 
     // blinky
     Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 15};
@@ -156,6 +158,10 @@ restart:
     float blinky_skatter = 12;
     float pinky_skatter = 22;
     float inky_skatter = 32;
+
+    // invincible mode
+    bool invincible_mode = false;
+    int invincible_time = 0;
 
     while (!WindowShouldClose())
     {
@@ -204,6 +210,13 @@ restart:
                 if (maze[i][j] == '-')
                     DrawRectangle(j * 25 + space, i * 25 + 18 + space, 25, 2, RAYWHITE);
             }
+        }
+
+        // invincible mode
+        if (currenttime - invincible_time > 5)
+        {
+            invincible_mode = false;
+            invincible_time = 0;
         }
 
         // Apple logic
@@ -280,6 +293,8 @@ restart:
                 bigdots--;
                 maze[(int)round(y)][(int)round(x)] = ' ';
                 PlaySound(eatfruit);
+                invincible_mode = true;
+                invincible_time = currenttime;
             }
             if (maze[(int)round(y)][(int)round(x)] == 'a')
             {
@@ -296,8 +311,16 @@ restart:
         else if (pac_pos.x + 12.5 > space + col * 25)
             pac_pos.x -= col * 25;
 
+        // negative direction
+        neg_pac_pos.x = -pac_pos.x;
+        neg_pac_pos.y = -pac_pos.y;
+
         // blinky direction
-        if (currenttime - blinky_skatter < 3)
+        if (invincible_mode)
+        {
+            blinky_target = neg_pac_pos;
+        }
+        else if (currenttime - blinky_skatter < 3)
         {
             blinky_target = (Vector2){width, 0};
         }
@@ -309,7 +332,8 @@ restart:
         {
             blinky_skatter = currenttime;
         }
-        ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe*0.8, speed*0.8);
+
+        ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 4)
@@ -322,19 +346,23 @@ restart:
         }
 
         // pinky direction
-        if (currenttime - pinky_skatter < 3)
+        if (invincible_mode)
+        {
+            pinky_target = neg_pac_pos;
+        }
+        else if (currenttime - pinky_skatter < 3)
         {
             pinky_target = (Vector2){0, 0};
         }
         else if (currenttime - pinky_skatter < 10)
         {
-            pinky_target = Vector2Add(pac_pos, Vector2Scale(pac_speed, dt*30));
+            pinky_target = Vector2Add(pac_pos, Vector2Scale(pac_speed, dt * 30));
         }
         else
         {
             pinky_skatter = currenttime;
         }
-        ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe*0.8, speed*0.8);
+        ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 14)
@@ -347,7 +375,11 @@ restart:
         }
 
         // inky direction
-        if (currenttime - inky_skatter < 3)
+        if (invincible_mode)
+        {
+            inky_target = neg_pac_pos;
+        }
+        else if (currenttime - inky_skatter < 3)
         {
             inky_target = (Vector2){width, height};
         }
@@ -359,7 +391,7 @@ restart:
         {
             inky_skatter = currenttime;
         }
-        ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe*0.8, speed*0.8);
+        ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 24)
@@ -372,15 +404,19 @@ restart:
         }
 
         // clyde direction
-        if ((clyde_pos.x-blinky_pos.x) < 100 && (clyde_pos.x-blinky_pos.x) > -100 && (clyde_pos.y-blinky_pos.y) < 100 && (clyde_pos.y-blinky_pos.y) > -100)
+        if ((clyde_pos.x - blinky_pos.x) < 100 && (clyde_pos.x - blinky_pos.x) > -100 && (clyde_pos.y - blinky_pos.y) < 100 && (clyde_pos.y - blinky_pos.y) > -100)
         {
             clyde_target = (Vector2){0, height};
+        }
+        else if (invincible_mode)
+        {
+            clyde_target = neg_pac_pos;
         }
         else
         {
             clyde_target = pac_pos;
         }
-        ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe*0.8, speed*0.8);
+        ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * 0.8, speed * 0.8);
 
         // Position Update
         if ((currenttime - countdown) > 34)
@@ -429,22 +465,35 @@ restart:
             else
                 DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         }
+        Color tint = {255, 255, 255, alpha * 255};
 
         // blinky
         Rectangle blinkyblinky = {blinky_pos.x - 5, blinky_pos.y - 5, 35, 35};
-        DrawTexturePro(blinky, (Rectangle){0, 0, blinky.width, blinky.height}, blinkyblinky, origin, 0, WHITE);
+        if (invincible_mode)
+            DrawTexturePro(blueghost, (Rectangle){0, 0, blinky.width, blinky.height}, blinkyblinky, origin, 0, tint);
+        else
+            DrawTexturePro(blinky, (Rectangle){0, 0, blinky.width, blinky.height}, blinkyblinky, origin, 0, WHITE);
 
         // pinky
         Rectangle pinkypinky = {pinky_pos.x - 5, pinky_pos.y - 5, 35, 35};
-        DrawTexturePro(pinky, (Rectangle){0, 0, pinky.width, pinky.height}, pinkypinky, origin, 0, WHITE);
-        
+        if (invincible_mode)
+            DrawTexturePro(blueghost, (Rectangle){0, 0, pinky.width, pinky.height}, pinkypinky, origin, 0, tint);
+        else
+            DrawTexturePro(pinky, (Rectangle){0, 0, pinky.width, pinky.height}, pinkypinky, origin, 0, WHITE);
+
         // inky
         Rectangle inkyinky = {inky_pos.x - 5, inky_pos.y - 5, 35, 35};
-        DrawTexturePro(inky, (Rectangle){0, 0, inky.width, inky.height}, inkyinky, origin, 0, WHITE);
-        
+        if (invincible_mode)
+            DrawTexturePro(blueghost, (Rectangle){0, 0, inky.width, inky.height}, inkyinky, origin, 0, tint);
+        else
+            DrawTexturePro(inky, (Rectangle){0, 0, inky.width, inky.height}, inkyinky, origin, 0, WHITE);
+
         // clyde
         Rectangle clydeclyde = {clyde_pos.x - 5, clyde_pos.y - 5, 35, 35};
-        DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
+        if (invincible_mode)
+            DrawTexturePro(blueghost, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, tint);
+        else
+            DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
 
         if (currenttime - countdown > 15 && CheckCollisionRecs(blinkyblinky, pinkypinky))
             ghost_bounce(&blinky_speed, &pinky_speed, &blinkymove, &pinkymove);
@@ -460,11 +509,11 @@ restart:
 
         if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, pinkypinky))
             ghost_bounce(&clyde_speed, &pinky_speed, &clydemove, &pinkymove);
-        
+
         if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, inkyinky))
             ghost_bounce(&clyde_speed, &inky_speed, &clydemove, &inkymove);
 
-        if (CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, inkyinky) || CheckCollisionRecs(pacpac, clydeclyde))
+        if ((CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, inkyinky) || CheckCollisionRecs(pacpac, clydeclyde)) && !invincible_mode)
         {
             life--;
             countdown = currenttime;
@@ -484,6 +533,37 @@ restart:
             clyde_speed = (Vector2){0, -speed * 0.8};
             pac_speed = (Vector2){0, 0};
             appletime = currenttime - 8;
+        }
+        else if (invincible_mode)
+        {
+            if (CheckCollisionRecs(pacpac, blinkyblinky))
+            {
+                blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 15};
+                blinkymove = "up";
+                blinky_speed = (Vector2){0, -speed * 0.8};
+                point += 200;
+            }
+            else if (CheckCollisionRecs(pacpac, pinkypinky))
+            {
+                pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 15};
+                pinkymove = "up";
+                pinky_speed = (Vector2){0, -speed * 0.8};
+                point += 200;
+            }
+            else if (CheckCollisionRecs(pacpac, inkyinky))
+            {
+                inky_pos = (Vector2){13 * 25 + space, 15 * 25 + space - 5};
+                inkymove = "up";
+                inky_speed = (Vector2){0, -speed * 0.8};
+                point += 200;
+            }
+            else if (CheckCollisionRecs(pacpac, clydeclyde))
+            {
+                clyde_pos = (Vector2){14 * 25 + space, 15 * 25 + space - 5};
+                clydemove = "up";
+                clyde_speed = (Vector2){0, -speed * 0.8};
+                point += 200;
+            }
         }
 
         EndDrawing();
@@ -520,6 +600,7 @@ restart:
     UnloadTexture(inky);
     UnloadTexture(pinky);
     UnloadTexture(clyde);
+    UnloadTexture(blueghost);
 
     // Unload Sound
     UnloadSound(chomp);
@@ -726,13 +807,21 @@ void ghost_bounce(Vector2 *g1_speed, Vector2 *g2_speed, char **g1move, char **g2
     *g1_speed = Vector2Scale(*g1_speed, -1);
     *g2_speed = Vector2Scale(*g2_speed, -1);
 
-    if (*g1move == "up") *g1move = "down";
-    else if (*g1move == "down") *g1move = "up";
-    else if (*g1move == "left") *g1move = "right";
-    else *g1move = "left";
+    if (*g1move == "up")
+        *g1move = "down";
+    else if (*g1move == "down")
+        *g1move = "up";
+    else if (*g1move == "left")
+        *g1move = "right";
+    else
+        *g1move = "left";
 
-    if (*g2move == "up") *g2move = "down";
-    else if (*g2move == "down") *g2move = "up";
-    else if (*g2move == "left") *g2move = "right";
-    else *g2move = "left";
+    if (*g2move == "up")
+        *g2move = "down";
+    else if (*g2move == "down")
+        *g2move = "up";
+    else if (*g2move == "left")
+        *g2move = "right";
+    else
+        *g2move = "left";
 }
