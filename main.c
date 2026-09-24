@@ -22,6 +22,7 @@ int main(void)
     // Texture Loading
     Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3];
     Texture2D bg = LoadTexture("assets/bg.png");
+    Texture2D controls = LoadTexture("assets/howtoplay.png");
     Texture2D idle = LoadTexture("assets/idle.png");
     Texture2D apple = LoadTexture("assets/other/apple.png");
     Texture2D heart = LoadTexture("assets/other/heart.png");
@@ -51,6 +52,7 @@ int main(void)
     float coeff = 0.8;
     bool menu = true;
     bool isalive = true;
+    bool howtoplay = false;
 
 restart:
     char maze[31][30] = {
@@ -185,10 +187,26 @@ restart:
         float currenttime = GetTime();
         float alpha = (sinf(curr / 2) + 1.0f) / 2.0f;
 
+        if (howtoplay) {
+            DrawTexturePro(controls, (Rectangle){0, 0, controls.width, controls.height}, (Rectangle){0, - 50, width, height}, origin, 0, WHITE);
+
+            // Return button
+            Rectangle returnrec = {width / 2 - 100, height - 1.5 * space, 200, 50};
+            DrawRectangleRoundedLines(returnrec, 3, 10, YELLOW);
+            DrawText("Return", width / 2 - 70, height - 1.5 * space + 5, 40, YELLOW);
+            if (CheckCollisionPointRec(GetMousePosition(), returnrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                howtoplay = false;
+            }
+
+            EndDrawing();
+            continue;
+        }
+
         if (menu)
         {
             DrawTexturePro(logo, (Rectangle){0, 0, logo.width, logo.height}, (Rectangle){space, space, col * 25, 200}, origin, 0, WHITE);
-            DrawTexturePro(hudai, (Rectangle){0, 0, hudai.width, hudai.height}, (Rectangle){space, height - 350 - space, 400, 400}, origin, 0, WHITE);
+            DrawTexturePro(hudai, (Rectangle){0, 0, hudai.width, hudai.height}, (Rectangle){space/4, height - 350 - space, 300, 300}, origin, 0, WHITE);
             Rectangle button = {width / 2 - 125, height / 2 - 100, 250, 100};
             DrawTexturePro(play, (Rectangle){0, 0, play.width, play.height}, button, origin, 0, WHITE);
             if (CheckCollisionPointRec(GetMousePosition(), button) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -196,6 +214,16 @@ restart:
                 menu = false;
                 countdown = currenttime;
             }
+
+            // How to play Button
+            Rectangle howtoplayrec = {width / 2 - 150, height - 1.5 * space, 300, 50};
+            DrawRectangleRoundedLines(howtoplayrec, 3, 10, YELLOW);
+            DrawText("HOW TO PLAY", width / 2 - 107, height - 1.5 * space + 10, 30, YELLOW);
+            if (CheckCollisionPointRec(GetMousePosition(), howtoplayrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                howtoplay = true;
+            }
+
             EndDrawing();
             continue;
         }
@@ -207,13 +235,13 @@ restart:
             DrawText(TextFormat("Your Score: %d", point), space, height - 5.5 * space, 70, RAYWHITE);
             if (hscore <= point)
             {
-                DrawText("New Highest Score", space, height - 4.5 * space, 70, (Color){36, 249, 118, alpha * 255});
+                DrawText("New Highest Score", space, height - 4.5 * space, 70, (Color){36, 249, 118, (alpha / 2 + 0.5) * 255});
                 faah = freopen("record.txt", "w", faah);
                 fputs(TextFormat("%d\n", point), faah);
             }
             else
             {
-                DrawText(TextFormat("Highest Score: %d", hscore), space, height - 4.5 * space, 60, (Color){255, 99, 71, alpha * 255});
+                DrawText(TextFormat("Highest Score: %d", hscore), space, height - 4.5 * space, 60, (Color){255, 99, 71, (alpha / 2 + 0.5) * 255});
             }
             if (faah)
                 fclose(faah);
@@ -680,6 +708,7 @@ restart:
         UnloadTexture(pac_down[i]);
     }
     UnloadTexture(bg);
+    UnloadTexture(controls);
     UnloadTexture(idle);
     UnloadTexture(apple);
     UnloadTexture(heart);
@@ -915,3 +944,5 @@ void ghost_bounce(Vector2 *g1_speed, Vector2 *g2_speed, char **g1move, char **g2
     else
         *g2move = "left";
 }
+
+// Image Sources : https://similarpng.com/pac-mans-energetic-chase-a-3d-arcade-adventure/
