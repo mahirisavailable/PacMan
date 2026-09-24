@@ -48,7 +48,9 @@ int main(void)
 
     int point = 0;
     int life = 3;
+    float coeff = 0.8;
     bool menu = true;
+    bool isalive = true;
 
 restart:
     char maze[31][30] = {
@@ -129,28 +131,28 @@ restart:
     // blinky
     Vector2 blinky_pos = {13 * 25 + space, 14 * 25 + space - 15};
     Vector2 blinky_target;
-    Vector2 blinky_speed = {0, -speed * 0.8};
+    Vector2 blinky_speed = {0, -speed * coeff};
     char *blinkymove = "up";
     float blinky_skatter = 12;
 
     // pinky
     Vector2 pinky_pos = {14 * 25 + space, 14 * 25 + space - 15};
     Vector2 pinky_target;
-    Vector2 pinky_speed = {0, -speed * 0.8};
+    Vector2 pinky_speed = {0, -speed * coeff};
     char *pinkymove = "up";
     float pinky_skatter = 22;
 
     // inky
     Vector2 inky_pos = {13 * 25 + space, 15 * 25 + space - 5};
     Vector2 inky_target;
-    Vector2 inky_speed = {0, -speed * 0.8};
+    Vector2 inky_speed = {0, -speed * coeff};
     char *inkymove = "up";
     float inky_skatter = 32;
 
     // clyde
     Vector2 clyde_pos = {14 * 25 + space, 15 * 25 + space - 5};
     Vector2 clyde_target;
-    Vector2 clyde_speed = {0, -speed * 0.8};
+    Vector2 clyde_speed = {0, -speed * coeff};
     char *clydemove = "up";
 
     int dots = 240;
@@ -198,6 +200,64 @@ restart:
             continue;
         }
 
+        if (!isalive)
+        {
+            DrawText("Game Over", 2 * space, 1.5 * space, 100, RED);
+
+            DrawText(TextFormat("Your Score: %d", point), space, height - 5.5 * space, 70, RAYWHITE);
+            if (hscore <= point)
+            {
+                DrawText("New Highest Score", space, height - 4.5 * space, 70, (Color){36, 249, 118, alpha * 255});
+                faah = freopen("record.txt", "w", faah);
+                fputs(TextFormat("%d\n", point), faah);
+            }
+            else
+            {
+                DrawText(TextFormat("Highest Score: %d", hscore), space, height - 4.5 * space, 60, (Color){255, 99, 71, alpha * 255});
+            }
+            if (faah)
+                fclose(faah);
+
+            // Menu Button
+            Rectangle menurec = {width / 2 - 300, height - 2.5 * space, 150, 50};
+            DrawRectangleRoundedLines(menurec, 3, 10, GREEN);
+            DrawText("Menu", width / 2 - 275, height - 2.5 * space + 5, 40, GREEN);
+            if (CheckCollisionPointRec(GetMousePosition(), menurec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                isalive = true;
+                menu = true;
+                life = 3;
+                point = 0;
+                goto restart;
+            }
+
+            // Restart Button
+            Rectangle restartrec = {width / 2 - 75, height - 2.5 * space, 150, 50};
+            DrawRectangleRoundedLines(restartrec, 3, 10, YELLOW);
+            DrawText("Restart", width / 2 - 60, height - 2.5 * space + 10, 30, YELLOW);
+            if (CheckCollisionPointRec(GetMousePosition(), restartrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                isalive = true;
+                countdown = currenttime;
+                life = 3;
+                point = 0;
+                goto restart;
+            }
+
+            // Exit Button
+            Rectangle exitrec = {width / 2 + 150, height - 2.5 * space, 150, 50};
+            DrawRectangleRoundedLines(exitrec, 3, 10, RED);
+            DrawText("Exit", width / 2 + 190, height - 2.5 * space + 5, 40, RED);
+            if (CheckCollisionPointRec(GetMousePosition(), exitrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                EndDrawing();
+                break;
+            }
+
+            EndDrawing();
+            continue;
+        }
+
         if (hscore < point)
             hscore = point;
 
@@ -206,7 +266,7 @@ restart:
         if (faah)
             DrawText(TextFormat("Highest Score: %d", hscore), space, height - 50, 50, RAYWHITE);
         for (int i = 1; i <= life; i++)
-            DrawTexturePro(heart, (Rectangle){0, 0, heart.width, heart.height}, (Rectangle){width - space - 60*i, space - 50, 50, 50}, origin, 0, WHITE);
+            DrawTexturePro(heart, (Rectangle){0, 0, heart.width, heart.height}, (Rectangle){width - space - 60 * i, space - 50, 50, 50}, origin, 0, WHITE);
 
         // Maze
         for (int i = 0; i < row; i++)
@@ -348,9 +408,9 @@ restart:
             blinky_skatter = currenttime;
         }
         if (invincible_mode)
-            ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * 0.8, speed * 0.6);
+            ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * coeff, speed * (coeff - 0.2));
         else
-            ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * 0.8, speed * 0.8);
+            ghost_direction(maze, decision, blinky_pos, &blinky_speed, &blinkymove, blinky_target, moe * coeff, speed * coeff);
 
         // Position Update
         if ((currenttime - countdown) > 4)
@@ -380,9 +440,9 @@ restart:
             pinky_skatter = currenttime;
         }
         if (invincible_mode)
-            ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * 0.8, speed * 0.6);
+            ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * coeff, speed * (coeff - 0.2));
         else
-            ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * 0.8, speed * 0.8);
+            ghost_direction(maze, decision, pinky_pos, &pinky_speed, &pinkymove, pinky_target, moe * coeff, speed * coeff);
 
         // Position Update
         if ((currenttime - countdown) > 14)
@@ -412,9 +472,9 @@ restart:
             inky_skatter = currenttime;
         }
         if (invincible_mode)
-            ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * 0.8, speed * 0.6);
+            ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * coeff, speed * (coeff - 0.2));
         else
-            ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * 0.8, speed * 0.8);
+            ghost_direction(maze, decision, inky_pos, &inky_speed, &inkymove, inky_target, moe * coeff, speed * coeff);
 
         // Position Update
         if ((currenttime - countdown) > 24)
@@ -440,9 +500,9 @@ restart:
             clyde_target = pac_pos;
         }
         if (invincible_mode)
-            ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * 0.8, speed * 0.6);
+            ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * coeff, speed * (coeff - 0.2));
         else
-            ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * 0.8, speed * 0.8);
+            ghost_direction(maze, decision, clyde_pos, &clyde_speed, &clydemove, clyde_target, moe * coeff, speed * coeff);
 
         // Position Update
         if ((currenttime - countdown) > 34)
@@ -553,10 +613,10 @@ restart:
             pinkymove = "up";
             inkymove = "up";
             clydemove = "up";
-            blinky_speed = (Vector2){0, -speed * 0.8};
-            pinky_speed = (Vector2){0, -speed * 0.8};
-            inky_speed = (Vector2){0, -speed * 0.8};
-            clyde_speed = (Vector2){0, -speed * 0.8};
+            blinky_speed = (Vector2){0, -speed * coeff};
+            pinky_speed = (Vector2){0, -speed * coeff};
+            inky_speed = (Vector2){0, -speed * coeff};
+            clyde_speed = (Vector2){0, -speed * coeff};
             pac_speed = (Vector2){0, 0};
             appletime = currenttime - 8;
         }
@@ -598,22 +658,14 @@ restart:
 
         EndDrawing();
 
-        if (hscore <= point)
-        {
-            faah = freopen("record.txt", "w", faah);
-            fputs(TextFormat("%d\n", point), faah);
-        }
-        fclose(faah);
-
         if (life == 0)
         {
-            menu = true;
-            life = 3;
-            point = 0;
-            goto restart;
+            isalive = false;
         }
         if (dots == 0 && bigdots == 0)
         {
+            if (coeff < 1)
+                coeff += 0.05;
             countdown = currenttime;
             goto restart;
         }
