@@ -22,6 +22,7 @@ int main(void)
     // Texture Loading
     Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3];
     Texture2D bg = LoadTexture("assets/bg.png");
+    Texture2D hole = LoadTexture("assets/black-hole.png");
     Texture2D controls = LoadTexture("assets/howtoplay.png");
     Texture2D idle = LoadTexture("assets/idle.png");
     Texture2D apple = LoadTexture("assets/other/apple.png");
@@ -50,6 +51,8 @@ int main(void)
     int point = 0;
     int life = 3;
     float coeff = 0.8;
+    bool mode = false;
+    bool skin = false;
     bool menu = true;
     bool isalive = true;
     bool howtoplay = false;
@@ -187,8 +190,9 @@ restart:
         float currenttime = GetTime();
         float alpha = (sinf(curr / 2) + 1.0f) / 2.0f;
 
-        if (howtoplay) {
-            DrawTexturePro(controls, (Rectangle){0, 0, controls.width, controls.height}, (Rectangle){0, - 50, width, height}, origin, 0, WHITE);
+        if (howtoplay)
+        {
+            DrawTexturePro(controls, (Rectangle){0, 0, controls.width, controls.height}, (Rectangle){0, -50, width, height}, origin, 0, WHITE);
 
             // Return button
             Rectangle returnrec = {width / 2 - 100, height - 1.5 * space, 200, 50};
@@ -206,8 +210,44 @@ restart:
         if (menu)
         {
             DrawTexturePro(logo, (Rectangle){0, 0, logo.width, logo.height}, (Rectangle){space, space, col * 25, 200}, origin, 0, WHITE);
-            DrawTexturePro(hudai, (Rectangle){0, 0, hudai.width, hudai.height}, (Rectangle){space/4, height - 350 - space, 300, 300}, origin, 0, WHITE);
-            Rectangle button = {width / 2 - 125, height / 2 - 100, 250, 100};
+            DrawTexturePro(hudai, (Rectangle){0, 0, hudai.width, hudai.height}, (Rectangle){space / 4, height - 4 * space, 300, 300}, origin, 0, WHITE);
+
+            // Mode Selection
+            DrawText("MODE", 2 * space, height - 5.5 * space, 50, BLUE);
+            if (mode)
+            {
+                DrawText("Wormhole", 2 * space + 2, height - 5 * space + 10, 30, PINK);
+                DrawText("<", 2 * space - 30, height - 5 * space, 50, PINK);
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space - 30, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                    mode = !mode;
+            }
+            else
+            {
+                DrawText("Classic", 2 * space + 20, height - 5 * space + 10, 30, PINK);
+                DrawText(">", 3.6 * space, height - 5 * space, 50, PINK);
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space + 50, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                    mode = !mode;
+            }
+
+            // Theme Selection
+            DrawText("THEME", width - 4 * space, height - 5.5 * space, 50, BLUE);
+            if (skin)
+            {
+                DrawText("Tom & Jerry", width - 4 * space - 5, height - 5 * space + 10, 30, PINK);
+                DrawText("<", width - 4 * space - 35, height - 5 * space, 50, PINK);
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 4 * space - 35, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                    skin = !skin;
+            }
+            else
+            {
+                DrawText("Classic", width - 4 * space + 45, height - 5 * space + 10, 30, PINK);
+                DrawText(">", width - 2 * space, height - 5 * space, 50, PINK);
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 3 * space - 20, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                    skin = !skin;
+            }
+
+            // Play Button
+            Rectangle button = {width / 2 - 125, height - 3.5 * space, 250, 100};
             DrawTexturePro(play, (Rectangle){0, 0, play.width, play.height}, button, origin, 0, WHITE);
             if (CheckCollisionPointRec(GetMousePosition(), button) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
@@ -306,6 +346,8 @@ restart:
                 //     Rectangle cell = {j * 25 + space, i * 25 + space, 25, 25};
                 //     DrawRectanglePro(cell, origin, 0, (Color){255, 255, 255, 150});
                 // }
+                if (mode && (i == 1 || i == 29) && (j == 1 || j == 26))
+                    DrawTexturePro(hole, (Rectangle){0, 0, hole.width, hole.height}, (Rectangle){space + j * 25 - 5, space + i * 25 - 5, 35, 35}, origin, 0, WHITE);
                 if (maze[i][j] == '.')
                     DrawCircle(j * 25 + 12 + space, i * 25 + 12 + space, 3, RAYWHITE);
                 if (maze[i][j] == 'o')
@@ -353,6 +395,22 @@ restart:
 
         if (x + moe >= round(x) && x - moe <= round(x) && y + moe >= round(y) && y - moe <= round(y))
         {
+            // Hole Jumping
+            if (mode && ((int)round(x) == 1 || (int)round(x) == 26) && ((int)round(y) == 1 || (int)round(y) == 29))
+            {
+                if (maze[(int)round(y)][(int)round(x)] == '.')
+                {
+                    point += 10;
+                    dots--;
+                    maze[(int)round(y)][(int)round(x)] = ' ';
+                    PlaySound(chomp);
+                }
+                x = 27 - x;
+                y = 30 - y;
+                pac_pos.x = 25 * x + space;
+                pac_pos.y = 25 * y + space;
+            }
+
             // Collision with front block
             if (maze[(int)round(y + pac_speed.y / speed)][(int)round(x + pac_speed.x / speed)] == '#')
             {
@@ -579,7 +637,10 @@ restart:
             else
                 DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         }
-        Color tint = {255, 255, 255, alpha * 255};
+
+            Color tint = WHITE;
+        if (currenttime - invincible_time > 3.75)
+            tint = (Color){255, 255, 255, (int)(alpha * 256 * 4) % 256}; 
 
         // blinky
         Rectangle blinkyblinky = {blinky_pos.x - 5, blinky_pos.y - 5, 35, 35};
@@ -708,6 +769,7 @@ restart:
         UnloadTexture(pac_down[i]);
     }
     UnloadTexture(bg);
+    UnloadTexture(hole);
     UnloadTexture(controls);
     UnloadTexture(idle);
     UnloadTexture(apple);
