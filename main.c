@@ -20,7 +20,7 @@ int main(void)
     SetTargetFPS(60);
 
     // Texture Loading
-    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3];
+    Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], tom_ghost[4];
     Texture2D bg = LoadTexture("assets/bg.png");
     Texture2D hole = LoadTexture("assets/black-hole.png");
     Texture2D controls = LoadTexture("assets/howtoplay.png");
@@ -35,6 +35,8 @@ int main(void)
     Texture2D inky = LoadTexture("assets/ghosts/inky.png");
     Texture2D clyde = LoadTexture("assets/ghosts/clyde.png");
     Texture2D blueghost = LoadTexture("assets/ghosts/blue_ghost.png");
+    Texture2D jerry = LoadTexture("assets/theme1/jerry.png");
+    Texture2D bob = LoadTexture("assets/theme1/bob.png");
 
     for (int i = 0; i < 3; i++)
     {
@@ -43,6 +45,8 @@ int main(void)
         pac_up[i] = LoadTexture(TextFormat("assets/pacman-up/%d.png", i + 1));
         pac_down[i] = LoadTexture(TextFormat("assets/pacman-down/%d.png", i + 1));
     }
+    for (int i = 0; i < 4; i++)
+        tom_ghost[i] = LoadTexture(TextFormat("assets/theme1/tomghost%d.png", i + 1));
 
     // sound loading
     Sound chomp = LoadSound("assets/audio/pacman_chomp.wav");
@@ -677,10 +681,18 @@ restart:
             pinky_skatter = currenttime + 10;
             inky_skatter = currenttime + 20;
         }
+        
+        Color tint = WHITE;
+        if (currenttime - invincible_time > 3.75)
+            tint = (Color){255, 255, 255, (int)(alpha * 256 * 4) % 256};
 
         // Draw PacMan
         Rectangle pacpac = {pac_pos.x - 5, pac_pos.y - 5, 35, 35};
-        if (pac_speed.x < 0 && pac_speed.y == 0)
+        if (skin && !invincible_mode)
+            DrawTexturePro(jerry, (Rectangle){0, 0, jerry.width, jerry.height}, pacpac, origin, 0, WHITE);
+        else if (skin)
+            DrawTexturePro(bob, (Rectangle){0, 0, bob.width, bob.height}, pacpac, origin, 0, tint);
+        else if (pac_speed.x < 0 && pac_speed.y == 0)
             DrawTexturePro(pac_left[curr % 3], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
         else if (pac_speed.x > 0 && pac_speed.y == 0)
             DrawTexturePro(pac_right[curr % 3], (Rectangle){0, 0, pac_left[0].width, pac_left[0].height}, pacpac, origin, 0, WHITE);
@@ -702,34 +714,38 @@ restart:
                 DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         }
 
-        Color tint = WHITE;
-        if (currenttime - invincible_time > 3.75)
-            tint = (Color){255, 255, 255, (int)(alpha * 256 * 4) % 256};
-
         // blinky
         Rectangle blinkyblinky = {blinky_pos.x - 5, blinky_pos.y - 5, 35, 35};
-        if (invincible_mode)
+        if (skin)
+            DrawTexturePro(tom_ghost[0], (Rectangle){0, 0, tom_ghost[0].width, tom_ghost[0].height}, blinkyblinky, origin, 0, WHITE);
+        else if (invincible_mode)
             DrawTexturePro(blueghost, (Rectangle){0, 0, blinky.width, blinky.height}, blinkyblinky, origin, 0, tint);
         else
             DrawTexturePro(blinky, (Rectangle){0, 0, blinky.width, blinky.height}, blinkyblinky, origin, 0, WHITE);
 
         // pinky
         Rectangle pinkypinky = {pinky_pos.x - 5, pinky_pos.y - 5, 35, 35};
-        if (invincible_mode)
+        if (skin)
+            DrawTexturePro(tom_ghost[1], (Rectangle){0, 0, tom_ghost[1].width, tom_ghost[1].height}, pinkypinky, origin, 0, WHITE);
+        else if (invincible_mode)
             DrawTexturePro(blueghost, (Rectangle){0, 0, pinky.width, pinky.height}, pinkypinky, origin, 0, tint);
         else
             DrawTexturePro(pinky, (Rectangle){0, 0, pinky.width, pinky.height}, pinkypinky, origin, 0, WHITE);
 
         // inky
         Rectangle inkyinky = {inky_pos.x - 5, inky_pos.y - 5, 35, 35};
-        if (invincible_mode)
+        if (skin)
+            DrawTexturePro(tom_ghost[2], (Rectangle){0, 0, tom_ghost[2].width, tom_ghost[2].height}, inkyinky, origin, 0, WHITE);
+        else if (invincible_mode)
             DrawTexturePro(blueghost, (Rectangle){0, 0, inky.width, inky.height}, inkyinky, origin, 0, tint);
         else
             DrawTexturePro(inky, (Rectangle){0, 0, inky.width, inky.height}, inkyinky, origin, 0, WHITE);
 
         // clyde
         Rectangle clydeclyde = {clyde_pos.x - 5, clyde_pos.y - 5, 35, 35};
-        if (invincible_mode)
+        if (skin)
+            DrawTexturePro(tom_ghost[3], (Rectangle){0, 0, tom_ghost[3].width, tom_ghost[3].height}, clydeclyde, origin, 0, WHITE);
+        else if (invincible_mode)
             DrawTexturePro(blueghost, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, tint);
         else
             DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
@@ -832,6 +848,10 @@ restart:
         UnloadTexture(pac_up[i]);
         UnloadTexture(pac_down[i]);
     }
+
+    for (int i = 0; i < 4; i++)
+        UnloadTexture(tom_ghost[i]);
+
     UnloadTexture(bg);
     UnloadTexture(hole);
     UnloadTexture(controls);
@@ -846,6 +866,8 @@ restart:
     UnloadTexture(pinky);
     UnloadTexture(clyde);
     UnloadTexture(blueghost);
+    UnloadTexture(jerry);
+    UnloadTexture(bob);
 
     // Unload Sound
     UnloadSound(chomp);
