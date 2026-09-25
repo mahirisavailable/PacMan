@@ -47,6 +47,11 @@ int main(void)
     // sound loading
     Sound chomp = LoadSound("assets/audio/pacman_chomp.wav");
     Sound eatfruit = LoadSound("assets/audio/pacman_eatfruit.wav");
+    Music starting = LoadMusicStream("assets/audio/starting.mp3");
+    Music ghost_siren = LoadMusicStream("assets/audio/ghost_siren.mp3");
+    ghost_siren.looping = true;
+    Music eating_ghost = LoadMusicStream("assets/audio/eating_ghost.mp3");
+    eating_ghost.looping = true;
 
     int point = 0;
     int life = 3;
@@ -179,6 +184,12 @@ restart:
         for (int i = 0; strscore[i] != '\n'; i++)
             hscore = hscore * 10 + (int)(strscore[i] - '0');
     }
+
+    // sound management
+    bool play_starting_sound = true;
+    bool checking_starting_sound = false;
+    bool play_ghost_siren = false;
+    bool play_eating_ghost = false;
 
     while (!WindowShouldClose())
     {
@@ -362,6 +373,42 @@ restart:
         {
             invincible_mode = false;
             invincible_time = 0;
+        }
+
+        // sound system
+        if (!IsMusicStreamPlaying(starting))
+        {
+            if (invincible_mode)
+            {
+                if (IsMusicStreamPlaying(ghost_siren))
+                {
+                    StopMusicStream(ghost_siren);
+                }
+                if (!IsMusicStreamPlaying(eating_ghost))
+                {
+                    PlayMusicStream(eating_ghost);
+                }
+            }
+            else
+            {
+                if (IsMusicStreamPlaying(eating_ghost))
+                {
+                    StopMusicStream(eating_ghost);
+                }
+                if (!IsMusicStreamPlaying(ghost_siren))
+                {
+                    PlayMusicStream(ghost_siren);
+                }
+            }
+
+            if (IsMusicStreamPlaying(ghost_siren))
+            {
+                UpdateMusicStream(ghost_siren);
+            }
+            if (IsMusicStreamPlaying(eating_ghost))
+            {
+                UpdateMusicStream(eating_ghost);
+            }
         }
 
         // Apple logic
@@ -603,6 +650,23 @@ restart:
         // Countdown
         if ((currenttime - countdown) < 4)
         {
+            if (play_starting_sound)
+            {
+                PlayMusicStream(starting);
+            }
+            if (IsMusicStreamPlaying(starting))
+            {
+                checking_starting_sound = true;
+            }
+            if (IsMusicStreamPlaying(starting))
+            {
+                UpdateMusicStream(starting);
+            }
+            if (!IsMusicStreamPlaying(starting) && checking_starting_sound)
+            {
+                play_starting_sound = false;
+            }
+
             int cd = 3 - (int)(currenttime - countdown);
             if (cd)
                 DrawText(TextFormat("%d", cd), width / 2 - 10, 17 * 25 + space - 10, 50, YELLOW);
@@ -638,9 +702,9 @@ restart:
                 DrawTexturePro(idle, (Rectangle){0, 0, idle.width, idle.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         }
 
-            Color tint = WHITE;
+        Color tint = WHITE;
         if (currenttime - invincible_time > 3.75)
-            tint = (Color){255, 255, 255, (int)(alpha * 256 * 4) % 256}; 
+            tint = (Color){255, 255, 255, (int)(alpha * 256 * 4) % 256};
 
         // blinky
         Rectangle blinkyblinky = {blinky_pos.x - 5, blinky_pos.y - 5, 35, 35};
@@ -786,6 +850,9 @@ restart:
     // Unload Sound
     UnloadSound(chomp);
     UnloadSound(eatfruit);
+    UnloadMusicStream(starting);
+    UnloadMusicStream(ghost_siren);
+    UnloadMusicStream(eating_ghost);
 
     CloseAudioDevice();
     CloseWindow();
@@ -1007,4 +1074,8 @@ void ghost_bounce(Vector2 *g1_speed, Vector2 *g2_speed, char **g1move, char **g2
         *g2move = "left";
 }
 
-// Image Sources : https://similarpng.com/pac-mans-energetic-chase-a-3d-arcade-adventure/
+/*
+Credits:
+    https://similarpng.com/pac-mans-energetic-chase-a-3d-arcade-adventure/
+    https://www.wired.com/story/what-black-holes-explained/
+*/
