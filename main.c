@@ -23,6 +23,7 @@ int main(void)
     Texture2D pac_left[3], pac_right[3], pac_up[3], pac_down[3], tom_ghost[4];
     Texture2D bg = LoadTexture("assets/bg.png");
     Texture2D hole = LoadTexture("assets/black-hole.png");
+    Texture2D credits = LoadTexture("assets/credit.png");
     Texture2D controls = LoadTexture("assets/howtoplay.png");
     Texture2D idle = LoadTexture("assets/idle.png");
     Texture2D apple = LoadTexture("assets/other/apple.png");
@@ -65,6 +66,7 @@ int main(void)
     bool menu = true;
     bool isalive = true;
     bool howtoplay = false;
+    bool credit = false;
 
 restart:
     char maze[31][30] = {
@@ -222,10 +224,27 @@ restart:
             continue;
         }
 
+        if (credit)
+        {
+            DrawTexturePro(credits, (Rectangle){0, 0, credits.width, credits.height}, (Rectangle){0, 0, width, height - 75}, origin, 0, WHITE);
+
+            // Return button
+            Rectangle returnrec = {width / 2 - 100, height - 0.8 * space, 200, 50};
+            DrawRectangleRoundedLines(returnrec, 3, 10, YELLOW);
+            DrawText("Return", width / 2 - 70, height - 0.8 * space + 5, 40, YELLOW);
+            if (CheckCollisionPointRec(GetMousePosition(), returnrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                credit = false;
+            }
+
+            EndDrawing();
+            continue;
+        }
+
         if (menu)
         {
             DrawTexturePro(logo, (Rectangle){0, 0, logo.width, logo.height}, (Rectangle){space, space, col * 25, 200}, origin, 0, WHITE);
-            DrawTexturePro(hudai, (Rectangle){0, 0, hudai.width, hudai.height}, (Rectangle){space / 4, height - 4 * space, 300, 300}, origin, 0, WHITE);
+            DrawTexturePro(hudai, (Rectangle){0, 0, hudai.width, hudai.height}, (Rectangle){space / 4, height - 4.5 * space, 300, 350}, origin, 0, WHITE);
 
             // Mode Selection
             DrawText("MODE", 2 * space, height - 5.5 * space, 50, BLUE);
@@ -262,12 +281,21 @@ restart:
             }
 
             // Play Button
-            Rectangle button = {width / 2 - 125, height - 3.5 * space, 250, 100};
+            Rectangle button = {width / 2 - 125, height - 4 * space, 250, 100};
             DrawTexturePro(play, (Rectangle){0, 0, play.width, play.height}, button, origin, 0, WHITE);
             if (CheckCollisionPointRec(GetMousePosition(), button) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 menu = false;
                 countdown = currenttime;
+            }
+
+            // Credit Button
+            Rectangle creditrec = {width / 2 - 100, height - 2.5 * space, 200, 50};
+            DrawRectangleRoundedLines(creditrec, 3, 10, YELLOW);
+            DrawText("CREDIT", width / 2 - 60, height - 2.5 * space + 10, 30, YELLOW);
+            if (CheckCollisionPointRec(GetMousePosition(), creditrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                credit = true;
             }
 
             // How to play Button
@@ -750,6 +778,8 @@ restart:
         else
             DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
 
+    /*    
+        // Ghost Collission
         if (currenttime - countdown > 15 && CheckCollisionRecs(blinkyblinky, pinkypinky))
             ghost_bounce(&blinky_speed, &pinky_speed, &blinkymove, &pinkymove);
 
@@ -767,6 +797,7 @@ restart:
 
         if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, inkyinky))
             ghost_bounce(&clyde_speed, &inky_speed, &clydemove, &inkymove);
+    */
 
         if ((CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, inkyinky) || CheckCollisionRecs(pacpac, clydeclyde)) && !invincible_mode)
         {
