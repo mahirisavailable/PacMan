@@ -38,6 +38,10 @@ int main(void)
     Texture2D blueghost = LoadTexture("assets/ghosts/blue_ghost.png");
     Texture2D jerry = LoadTexture("assets/theme1/jerry.png");
     Texture2D bob = LoadTexture("assets/theme1/bob.png");
+    Texture2D soundon = LoadTexture("assets/buttons/sound_on.png");
+    Texture2D musicon = LoadTexture("assets/buttons/music_on.png");
+    Texture2D soundoff = LoadTexture("assets/buttons/sound_off.png");
+    Texture2D musicoff = LoadTexture("assets/buttons/music_off.png");
 
     for (int i = 0; i < 3; i++)
     {
@@ -54,7 +58,7 @@ int main(void)
     Sound eatfruit = LoadSound("assets/audio/pacman_eatfruit.wav");
     Sound starting = LoadSound("assets/audio/starting.mp3");
     Sound ghost_siren = LoadSound("assets/audio/ghost_siren.mp3");
-   
+
     Sound eating_ghost = LoadSound("assets/audio/eating_ghost.mp3");
     Sound ghost_hunted = LoadSound("assets/audio/ghosthunted.mp3");
 
@@ -62,8 +66,7 @@ int main(void)
     Sound click_button = LoadSound("assets/audio/click.mp3");
 
     Sound menu_sound = LoadSound("assets/audio/menu_sound.mp3");
-    Sound game_over=LoadSound("assets/audio/game_over.mp3");
-  
+    Sound game_over = LoadSound("assets/audio/game_over.mp3");
 
     int point = 0;
     int life = 3;
@@ -74,6 +77,9 @@ int main(void)
     bool isalive = true;
     bool howtoplay = false;
     bool credit = false;
+    bool music = true;
+    bool sound = true;
+    bool playon = true;
 
 restart:
     char maze[31][30] = {
@@ -198,11 +204,17 @@ restart:
             hscore = hscore * 10 + (int)(strscore[i] - '0');
     }
 
-   
-
     while (!WindowShouldClose())
     {
         BeginDrawing();
+
+        if (IsKeyPressed(KEY_SPACE)) playon = !playon;
+
+        if (!playon) {
+            EndDrawing();
+            continue;
+        }
+
         ClearBackground(BLACK);
 
         float dt = GetFrameTime();
@@ -221,7 +233,8 @@ restart:
             if (CheckCollisionPointRec(GetMousePosition(), returnrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 howtoplay = false;
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
             }
@@ -241,7 +254,8 @@ restart:
             if (CheckCollisionPointRec(GetMousePosition(), returnrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 credit = false;
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
             }
@@ -254,39 +268,98 @@ restart:
         {
             DrawTexturePro(logo, (Rectangle){0, 0, logo.width, logo.height}, (Rectangle){space, space, col * 25, 200}, origin, 0, WHITE);
             DrawTexturePro(hudai, (Rectangle){0, 0, hudai.width, hudai.height}, (Rectangle){space / 4, height - 4.5 * space, 300, 350}, origin, 0, WHITE);
-            if(IsSoundPlaying(game_over)){
+            if (sound && !IsSoundPlaying(game_over))
+            {
                 PauseSound(game_over);
             }
-            if(!IsSoundPlaying(menu_sound)){
+            if (music && !IsSoundPlaying(menu_sound))
+            {
                 PlaySound(menu_sound);
             }
+
+            // music
+            Rectangle musicrec = {50, 50, 50, 50};
+            if (music)
+            {
+                DrawTexturePro(musicon, (Rectangle){0, 0, musicon.width, musicon.height}, musicrec, origin, 0, WHITE);
+                if (CheckCollisionPointRec(GetMousePosition(), musicrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    music = !music;
+                    PauseSound(menu_sound);
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
+                        PlaySound(click_button);
+                    }
+                }
+            }
+            else
+            {
+                DrawTexturePro(musicoff, (Rectangle){0, 0, musicoff.width, musicoff.height}, musicrec, origin, 0, WHITE);
+                if (CheckCollisionPointRec(GetMousePosition(), musicrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    music = !music;
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
+                        PlaySound(click_button);
+                    }
+                }
+            }
+
+            // sound
+            Rectangle soundrec = {width - 100, 50, 50, 50};
+            if (sound)
+            {
+                DrawTexturePro(soundon, (Rectangle){0, 0, soundon.width, soundon.height}, soundrec, origin, 0, WHITE);
+                if (CheckCollisionPointRec(GetMousePosition(), soundrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    sound = !sound;
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
+                        PlaySound(click_button);
+                    }
+                }
+            }
+            else
+            {
+                DrawTexturePro(soundoff, (Rectangle){0, 0, soundoff.width, soundoff.height}, soundrec, origin, 0, WHITE);
+                if (CheckCollisionPointRec(GetMousePosition(), soundrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    sound = !sound;
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
+                        PlaySound(click_button);
+                    }
+                }
+            }
+
             // Mode Selection
             DrawText("MODE", 2 * space, height - 5.5 * space, 50, BLUE);
             if (mode)
             {
                 DrawText("Wormhole", 2 * space + 2, height - 5 * space + 10, 30, PINK);
                 DrawText("<", 2 * space - 30, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space - 30, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space - 30, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
                     mode = !mode;
-                    if(!IsSoundPlaying(click_button)){
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
                         PlaySound(click_button);
                     }
                 }
-                    
             }
             else
             {
                 DrawText("Classic", 2 * space + 20, height - 5 * space + 10, 30, PINK);
                 DrawText(">", 3.6 * space, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space + 50, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space + 50, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
                     mode = !mode;
-                    if(!IsSoundPlaying(click_button)){
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
                         PlaySound(click_button);
                     }
                 }
             }
-
-            
 
             // Theme Selection
             DrawText("THEME", width - 4 * space, height - 5.5 * space, 50, BLUE);
@@ -294,9 +367,11 @@ restart:
             {
                 DrawText("Tom & Jerry", width - 4 * space - 5, height - 5 * space + 10, 30, PINK);
                 DrawText("<", width - 4 * space - 35, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 4 * space - 35, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 4 * space - 35, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
                     skin = !skin;
-                    if(!IsSoundPlaying(click_button)){
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
                         PlaySound(click_button);
                     }
                 }
@@ -305,9 +380,11 @@ restart:
             {
                 DrawText("Classic", width - 4 * space + 45, height - 5 * space + 10, 30, PINK);
                 DrawText(">", width - 2 * space, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 3 * space - 20, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 3 * space - 20, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
                     skin = !skin;
-                    if(!IsSoundPlaying(click_button)){
+                    if (sound && !IsSoundPlaying(click_button))
+                    {
                         PlaySound(click_button);
                     }
                 }
@@ -320,13 +397,14 @@ restart:
             {
                 menu = false;
                 countdown = currenttime;
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
-                if(IsSoundPlaying(menu_sound)){
+                if (IsSoundPlaying(menu_sound))
+                {
                     PauseSound(menu_sound);
                 }
-                
             }
 
             // Credit Button
@@ -336,7 +414,8 @@ restart:
             if (CheckCollisionPointRec(GetMousePosition(), creditrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 credit = true;
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
             }
@@ -348,7 +427,8 @@ restart:
             if (CheckCollisionPointRec(GetMousePosition(), howtoplayrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 howtoplay = true;
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
             }
@@ -359,24 +439,24 @@ restart:
 
         if (!isalive)
         {
-            if(IsSoundPlaying(ghost_siren)){
+            if (IsSoundPlaying(ghost_siren))
+            {
                 PauseSound(ghost_siren);
             }
-            if(IsSoundPlaying(chomp)){
+            if (IsSoundPlaying(chomp))
+            {
                 PauseSound(chomp);
             }
-            if(IsSoundPlaying(pacman_dying)){
+            if (IsSoundPlaying(pacman_dying))
+            {
                 PauseSound(pacman_dying);
             }
-
-            if(!IsSoundPlaying(game_over)){
+            if (sound && !IsSoundPlaying(game_over))
+            {
                 PlaySound(game_over);
             }
 
-
-
             DrawText("Game Over", 2 * space, 1.5 * space, 100, RED);
-
             DrawText(TextFormat("Your Score: %d", point), space, height - 5.5 * space, 70, RAYWHITE);
             if (hscore <= point)
             {
@@ -398,7 +478,8 @@ restart:
             if (CheckCollisionPointRec(GetMousePosition(), menurec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 isalive = true;
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
                 menu = true;
@@ -413,7 +494,8 @@ restart:
             DrawText("Restart", width / 2 - 60, height - 2.5 * space + 10, 30, YELLOW);
             if (CheckCollisionPointRec(GetMousePosition(), restartrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
                 isalive = true;
@@ -429,7 +511,8 @@ restart:
             DrawText("Exit", width / 2 + 190, height - 2.5 * space + 5, 40, RED);
             if (CheckCollisionPointRec(GetMousePosition(), exitrec) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
-                if(!IsSoundPlaying(click_button)){
+                if (sound && !IsSoundPlaying(click_button))
+                {
                     PlaySound(click_button);
                 }
                 EndDrawing();
@@ -450,33 +533,41 @@ restart:
         for (int i = 1; i <= life; i++)
             DrawTexturePro(heart, (Rectangle){0, 0, heart.width, heart.height}, (Rectangle){width - space - 60 * i, space - 50, 50, 50}, origin, 0, WHITE);
 
-
-
-        //sound 
-        if(!IsSoundPlaying(starting) && !invincible_mode){
-            if(IsSoundPlaying(eating_ghost)){
+        // sound
+        if (!IsSoundPlaying(starting) && !invincible_mode)
+        {
+            if (IsSoundPlaying(eating_ghost))
+            {
                 PauseSound(eating_ghost);
             }
-            if(-countdown+currenttime>=4){
-                if(!IsSoundPlaying(ghost_siren)){
+            if (-countdown + currenttime >= 4)
+            {
+                if (sound && !IsSoundPlaying(ghost_siren))
+                {
                     PlaySound(ghost_siren);
                 }
-            }else{
-                if(IsSoundPlaying(ghost_siren)){
+            }
+            else
+            {
+                if (IsSoundPlaying(ghost_siren))
+                {
                     PauseSound(ghost_siren);
                 }
             }
-            
         }
 
-        if(invincible_mode){
-            if(IsSoundPlaying(ghost_siren)){
+        if (invincible_mode)
+        {
+            if (IsSoundPlaying(ghost_siren))
+            {
                 PauseSound(ghost_siren);
             }
-            if(!IsSoundPlaying(eating_ghost)){
+            if (sound && !IsSoundPlaying(eating_ghost))
+            {
                 PlaySound(eating_ghost);
             }
         }
+
         // Maze
         for (int i = 0; i < row; i++)
         {
@@ -503,7 +594,6 @@ restart:
         {
             invincible_mode = false;
             invincible_time = 0;
-            
         }
 
         // Apple logic
@@ -545,11 +635,11 @@ restart:
                     point += 10;
                     dots--;
                     maze[(int)round(y)][(int)round(x)] = ' ';
-                    if(!IsSoundPlaying(chomp)){
+                    if (sound && !IsSoundPlaying(chomp))
+                    {
                         PlaySound(chomp);
                     }
                 }
-                
                 x = 27 - x;
                 y = 30 - y;
                 pac_pos.x = 25 * x + space;
@@ -591,20 +681,18 @@ restart:
                 point += 10;
                 dots--;
                 maze[(int)round(y)][(int)round(x)] = ' ';
-                if(!IsSoundPlaying(chomp)){
+                if (sound && !IsSoundPlaying(chomp))
+                {
                     PlaySound(chomp);
                 }
-                
             }
-        
-            
-            
             if (maze[(int)round(y)][(int)round(x)] == 'o')
             {
                 point += 50;
                 bigdots--;
                 maze[(int)round(y)][(int)round(x)] = ' ';
-                PlaySound(eatfruit);
+                if (sound)
+                    PlaySound(eatfruit);
                 invincible_mode = true;
                 invincible_time = currenttime;
             }
@@ -612,7 +700,8 @@ restart:
             {
                 point += 200;
                 maze[(int)round(y)][(int)round(x)] = 'A';
-                PlaySound(eatfruit);
+                if (sound)
+                    PlaySound(eatfruit);
             }
         }
 
@@ -630,7 +719,8 @@ restart:
         // blinky direction
         if (invincible_mode)
         {
-            blinky_target = neg_pac_pos;
+            blinky_target = Vector2Subtract(blinky_pos, Vector2Subtract(pac_pos, blinky_pos));
+            ;
         }
         else if (currenttime - blinky_skatter < 3)
         {
@@ -662,7 +752,8 @@ restart:
         // pinky direction
         if (invincible_mode)
         {
-            pinky_target = neg_pac_pos;
+            pinky_target = Vector2Subtract(pinky_pos, Vector2Subtract(pac_pos, pinky_pos));
+            ;
         }
         else if (currenttime - pinky_skatter < 3)
         {
@@ -694,7 +785,7 @@ restart:
         // inky direction
         if (invincible_mode)
         {
-            inky_target = neg_pac_pos;
+            inky_target = Vector2Subtract(inky_pos, Vector2Subtract(pac_pos, inky_pos));
         }
         else if (currenttime - inky_skatter < 3)
         {
@@ -730,7 +821,8 @@ restart:
         }
         else if (invincible_mode)
         {
-            clyde_target = neg_pac_pos;
+            clyde_target = Vector2Subtract(clyde_pos, Vector2Subtract(pac_pos, clyde_pos));
+            ;
         }
         else
         {
@@ -763,18 +855,21 @@ restart:
             blinky_skatter = currenttime;
             pinky_skatter = currenttime + 10;
             inky_skatter = currenttime + 20;
-            if(!IsSoundPlaying(starting) && life==3){
+            if (sound && !IsSoundPlaying(starting) && life == 3)
+            {
                 PlaySound(starting);
             }
         }
-        
+
         Color tint = WHITE;
         if (currenttime - invincible_time > 3.75)
             tint = (Color){255, 255, 255, (int)(alpha * 256 * 4) % 256};
 
         // Draw PacMan
         Rectangle pacpac = {pac_pos.x - 5, pac_pos.y - 5, 35, 35};
-        if (skin && !invincible_mode)
+        if (skin && pac_speed.x + pac_speed.y == 0)
+            DrawTexturePro(jerry, (Rectangle){0, 0, jerry.width, jerry.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
+        else if (skin && !invincible_mode)
             DrawTexturePro(jerry, (Rectangle){0, 0, jerry.width, jerry.height}, pacpac, origin, 0, WHITE);
         else if (skin)
             DrawTexturePro(bob, (Rectangle){0, 0, bob.width, bob.height}, pacpac, origin, 0, tint);
@@ -836,26 +931,26 @@ restart:
         else
             DrawTexturePro(clyde, (Rectangle){0, 0, clyde.width, clyde.height}, clydeclyde, origin, 0, WHITE);
 
-    /*    
-        // Ghost Collission
-        if (currenttime - countdown > 15 && CheckCollisionRecs(blinkyblinky, pinkypinky))
-            ghost_bounce(&blinky_speed, &pinky_speed, &blinkymove, &pinkymove);
+        /*
+            // Ghost Collission
+            if (currenttime - countdown > 15 && CheckCollisionRecs(blinkyblinky, pinkypinky))
+                ghost_bounce(&blinky_speed, &pinky_speed, &blinkymove, &pinkymove);
 
-        if (currenttime - countdown > 25 && CheckCollisionRecs(blinkyblinky, inkyinky))
-            ghost_bounce(&blinky_speed, &inky_speed, &blinkymove, &inkymove);
+            if (currenttime - countdown > 25 && CheckCollisionRecs(blinkyblinky, inkyinky))
+                ghost_bounce(&blinky_speed, &inky_speed, &blinkymove, &inkymove);
 
-        if (currenttime - countdown > 25 && CheckCollisionRecs(pinkypinky, inkyinky))
-            ghost_bounce(&pinky_speed, &inky_speed, &pinkymove, &inkymove);
+            if (currenttime - countdown > 25 && CheckCollisionRecs(pinkypinky, inkyinky))
+                ghost_bounce(&pinky_speed, &inky_speed, &pinkymove, &inkymove);
 
-        if (currenttime - countdown > 35 && CheckCollisionRecs(blinkyblinky, clydeclyde))
-            ghost_bounce(&blinky_speed, &clyde_speed, &blinkymove, &clydemove);
+            if (currenttime - countdown > 35 && CheckCollisionRecs(blinkyblinky, clydeclyde))
+                ghost_bounce(&blinky_speed, &clyde_speed, &blinkymove, &clydemove);
 
-        if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, pinkypinky))
-            ghost_bounce(&clyde_speed, &pinky_speed, &clydemove, &pinkymove);
+            if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, pinkypinky))
+                ghost_bounce(&clyde_speed, &pinky_speed, &clydemove, &pinkymove);
 
-        if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, inkyinky))
-            ghost_bounce(&clyde_speed, &inky_speed, &clydemove, &inkymove);
-    */
+            if (currenttime - countdown > 35 && CheckCollisionRecs(clydeclyde, inkyinky))
+                ghost_bounce(&clyde_speed, &inky_speed, &clydemove, &inkymove);
+        */
 
         if ((CheckCollisionRecs(pacpac, blinkyblinky) || CheckCollisionRecs(pacpac, pinkypinky) || CheckCollisionRecs(pacpac, inkyinky) || CheckCollisionRecs(pacpac, clydeclyde)) && !invincible_mode)
         {
@@ -878,16 +973,17 @@ restart:
             pac_speed = (Vector2){0, 0};
             appletime = currenttime - 8;
 
-            if(!IsSoundPlaying(pacman_dying)){
+            if (sound && !IsSoundPlaying(pacman_dying))
+            {
                 PlaySound(pacman_dying);
             }
-
         }
         else if (invincible_mode)
         {
             if (CheckCollisionRecs(pacpac, blinkyblinky))
             {
-                if(!IsSoundPlaying(ghost_hunted)){
+                if (sound && !IsSoundPlaying(ghost_hunted))
+                {
                     PlaySound(ghost_hunted);
                 }
                 blinky_pos = (Vector2){13 * 25 + space, 14 * 25 + space - 15};
@@ -897,7 +993,8 @@ restart:
             }
             else if (CheckCollisionRecs(pacpac, pinkypinky))
             {
-                if(!IsSoundPlaying(ghost_hunted)){
+                if (sound && !IsSoundPlaying(ghost_hunted))
+                {
                     PlaySound(ghost_hunted);
                 }
                 pinky_pos = (Vector2){14 * 25 + space, 14 * 25 + space - 15};
@@ -907,7 +1004,8 @@ restart:
             }
             else if (CheckCollisionRecs(pacpac, inkyinky))
             {
-                if(!IsSoundPlaying(ghost_hunted)){
+                if (sound && !IsSoundPlaying(ghost_hunted))
+                {
                     PlaySound(ghost_hunted);
                 }
                 inky_pos = (Vector2){13 * 25 + space, 15 * 25 + space - 5};
@@ -917,7 +1015,8 @@ restart:
             }
             else if (CheckCollisionRecs(pacpac, clydeclyde))
             {
-                if(!IsSoundPlaying(ghost_hunted)){
+                if (sound && !IsSoundPlaying(ghost_hunted))
+                {
                     PlaySound(ghost_hunted);
                 }
                 clyde_pos = (Vector2){14 * 25 + space, 15 * 25 + space - 5};
@@ -970,6 +1069,10 @@ restart:
     UnloadTexture(blueghost);
     UnloadTexture(jerry);
     UnloadTexture(bob);
+    UnloadTexture(musicon);
+    UnloadTexture(soundon);
+    UnloadTexture(musicoff);
+    UnloadTexture(soundoff);
 
     // Unload Sound
     UnloadSound(chomp);
