@@ -1,4 +1,4 @@
-# PacMan: Wormhole Edition
+# PacMan: Remix
 
 A custom RayLib-based arcade game inspired by classic PacMan, built as a BUET CSE-102 project. This version goes beyond a simple clone by adding original gameplay twists, themed visuals, and a more polished game menu.
 
