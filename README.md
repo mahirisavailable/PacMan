@@ -94,8 +94,9 @@ PacMan/
 - Course: CSE-102, BUET 1-1
 - Project Type: Academic game development project
 
-### Technologies Used
-- [RayLib](https://www.raylib.com/) for graphics, audio, and input handling
+### Tech Stack
+- Languages: `C`
+- Libraries: [`RayLib`](https://www.raylib.com/)
 
 ### Inspiration
 - Classic PacMan arcade gameplay
