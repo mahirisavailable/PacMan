@@ -56,26 +56,13 @@ This project recreates the core PacMan experience with a maze, collectible pelle
 
 ## Installation
 
-### Requirements
-- RayLib library
-- GCC, Clang, or MSVC
-- A desktop environment capable of running a graphical C application
-
-### Build
-
-```bash
-git clone https://github.com/mahirisavailable/PacMan.git
-cd PacMan
-gcc main.c -o main -lraylib -lm
-```
+Install all the files in a folder & run `main.exe`
 
 ### Run
 
 ```bash
 ./main
 ```
-
-On Windows, you can also run the provided `main.exe` from the repository root.
 
 ## Project Structure
 
@@ -86,16 +73,15 @@ PacMan/
 ├── record.txt                 # High score storage
 ├── README.md                  # Project documentation
 ├── assets/                    # Sprites, textures, sounds, menu assets
-│   ├── bg.png
-│   ├── idle.png
-│   ├── pacman-logo.png
-│   ├── play-button.png
-│   ├── ghosts/
-│   ├── other/
-│   ├── theme1/
-│   ├── buttons/
-│   └── audio/
-└── raylib_template.code-workspace
+    ├── bg.png
+    ├── idle.png
+    ├── pacman-logo.png
+    ├── play-button.png
+    ├── ghosts/
+    ├── other/
+    ├── theme1/
+    ├── buttons/
+    └── audio/
 ```
 
 ## Credits
@@ -106,7 +92,7 @@ PacMan/
 
 ### Educational Context
 - Course: CSE-102, BUET 1-1
-- Project Type: Academic game development assignment
+- Project Type: Academic game development project
 
 ### Technologies Used
 - [RayLib](https://www.raylib.com/) for graphics, audio, and input handling
