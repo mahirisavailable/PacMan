@@ -337,8 +337,9 @@ restart:
             if (mode)
             {
                 DrawText("Wormhole", 2 * space + 2, height - 5 * space + 10, 30, PINK);
+                DrawText(">", 3.55 * space, height - 5 * space, 50, PINK);
                 DrawText("<", 2 * space - 30, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space - 30, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space - 30, height - 5 * space, 210, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     mode = !mode;
                     if (sound && !IsSoundPlaying(click_button))
@@ -350,8 +351,9 @@ restart:
             else
             {
                 DrawText("Classic", 2 * space + 20, height - 5 * space + 10, 30, PINK);
-                DrawText(">", 3.6 * space, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space + 50, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                DrawText("<", 2 * space - 30, height - 5 * space, 50, PINK);
+                DrawText(">", 3.55 * space, height - 5 * space, 50, PINK);
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){2 * space - 30, height - 5 * space, 210, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     mode = !mode;
                     if (sound && !IsSoundPlaying(click_button))
@@ -366,8 +368,9 @@ restart:
             if (skin)
             {
                 DrawText("Tom & Jerry", width - 4 * space - 5, height - 5 * space + 10, 30, PINK);
+                DrawText(">", width - 2 * space + 5, height - 5 * space, 50, PINK);
                 DrawText("<", width - 4 * space - 35, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 4 * space - 35, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 4 * space - 30, height - 5 * space, 250, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     skin = !skin;
                     if (sound && !IsSoundPlaying(click_button))
@@ -379,8 +382,9 @@ restart:
             else
             {
                 DrawText("Classic", width - 4 * space + 45, height - 5 * space + 10, 30, PINK);
-                DrawText(">", width - 2 * space, height - 5 * space, 50, PINK);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 3 * space - 20, height - 5 * space, 150, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                DrawText("<", width - 4 * space - 35, height - 5 * space, 50, PINK);
+                DrawText(">", width - 2 * space + 5, height - 5 * space, 50, PINK);
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){width - 4 * space - 30, height - 5 * space, 250, 50}) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     skin = !skin;
                     if (sound && !IsSoundPlaying(click_button))
@@ -844,7 +848,7 @@ restart:
         }
 
         // Countdown
-        if ((currenttime - countdown) < 4)
+        if ((currenttime - countdown) <= 4)
         {
             int cd = 3 - (int)(currenttime - countdown);
             if (cd)
@@ -867,7 +871,7 @@ restart:
 
         // Draw PacMan
         Rectangle pacpac = {pac_pos.x - 5, pac_pos.y - 5, 35, 35};
-        if (skin && pac_speed.x + pac_speed.y == 0)
+        if (skin && currenttime - countdown < 4)
             DrawTexturePro(jerry, (Rectangle){0, 0, jerry.width, jerry.height}, (Rectangle){pac_pos.x - 5 + 12.5, pac_pos.y - 5, 35, 35}, origin, 0, WHITE);
         else if (skin && !invincible_mode)
             DrawTexturePro(jerry, (Rectangle){0, 0, jerry.width, jerry.height}, pacpac, origin, 0, WHITE);
@@ -1027,7 +1031,7 @@ restart:
         }
 
         EndDrawing();
-
+        
         if (life == 0)
         {
             isalive = false;
