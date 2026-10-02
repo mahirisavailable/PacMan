@@ -50,9 +50,10 @@ This project recreates the core PacMan experience with a maze, collectible pelle
 
 ## Gameplay Controls
 
-- Arrow Keys: Move PacMan
-- Left Mouse Click: Start game / select menu options
-- ESC: Exit the game
+- Arrow keys: move
+- Mouse Left Button: select
+- Esc key: exit
+- Space key: pause or play
 
 ## Installation
 
